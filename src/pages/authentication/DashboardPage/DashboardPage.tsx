@@ -31,6 +31,13 @@ import TopMoviesLikesBarChart from './components/top-movies-likes-bar-chart';
 import ViewsByPeriodCharts from './components/views-by-period-charts';
 import RatingBarChart from './components/rating-bar-chart';
 import RatingDistributionHistogram from './components/rating-distribution-histogram';
+import EngagementTypePieChart from './components/engagement-type-pie-chart';
+import DeviceDistributionPieChart from './components/device-distribution-pie-chart';
+import PopularBrowsersBarChart from './components/popular-browsers-bar-chart';
+import EngagementTimelineStackedLineChart from './components/engagement-timeline-stacked-line-chart';
+import UserActivityHeatmap from './components/user-activity-heatmap';
+import TopCountriesBarChart from './components/top-countries-bar-chart';
+import UserLocationMapChart from './components/user-location-map-chart';
 
 const wrapperCol: ColProps = {
     xs: 24,
@@ -88,6 +95,39 @@ export const DashboardPage = () => {
                 </Col>
                 <Col {...wrapperCol}>
                     <RatingDistributionHistogram />
+                </Col>
+            </Row>
+            <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
+                <Col {...wrapperCol}>
+                    <EngagementTypePieChart />
+                </Col>
+                <Col {...wrapperCol}>
+                    <DeviceDistributionPieChart />
+                </Col>
+            </Row>
+            <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
+                <Col span={24}>
+                    <PopularBrowsersBarChart />
+                </Col>
+            </Row>
+            <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
+                <Col span={24}>
+                    <EngagementTimelineStackedLineChart />
+                </Col>
+            </Row>
+            <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
+                <Col span={24}>
+                    <UserActivityHeatmap />
+                </Col>
+            </Row>
+            <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
+                <Col span={24}>
+                    <TopCountriesBarChart />
+                </Col>
+            </Row>
+            <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
+                <Col span={24}>
+                    <UserLocationMapChart />
                 </Col>
             </Row>
         </>

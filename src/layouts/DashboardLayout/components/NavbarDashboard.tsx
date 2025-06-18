@@ -1,16 +1,14 @@
-import { Layout, Menu } from 'antd';
 import {
-    DashboardOutlined,
-    UserOutlined,
-    ShoppingCartOutlined,
-    FileOutlined,
-    TeamOutlined,
-    SettingOutlined,
-    BarsOutlined
+  DashboardOutlined,
+  SettingOutlined,
+  ShoppingCartOutlined,
+  TeamOutlined,
+  UserOutlined
 } from '@ant-design/icons';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { RouteConfig } from '../../../constants';
+import { Layout, Menu } from 'antd';
 import { ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { RouteConfig } from '../../../constants';
 
 const { Sider } = Layout;
 

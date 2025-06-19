@@ -2,7 +2,7 @@ import Table, { ColumnsType } from 'antd/es/table';
 import { useFetchData } from '../../../hooks/useFetchData';
 import { Content } from '../../../models/Content';
 import { Button, Dropdown, Space } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined, ZoomInOutlined } from '@ant-design/icons';
 import { RouteConfig } from '../../../constants';
 import { useNavigate } from 'react-router-dom';
 
@@ -82,6 +82,8 @@ export default function TableContentPage() {
             navigate(RouteConfig.UpdateContentPage.getPath(record._id));
         } else if (key === 'delete') {
             console.log('Xoá', record);
+        } else if (key === 'season') {
+            navigate(RouteConfig.ListSeasonOfContentPage.getPath(record._id));
         }
     };
 
@@ -104,7 +106,8 @@ export default function TableContentPage() {
                     menu={{
                         items: [
                             { key: 'edit', label: 'Sửa', icon: <EditOutlined /> },
-                            { key: 'delete', label: 'Xoá', icon: <DeleteOutlined /> }
+                            { key: 'delete', label: 'Xoá', icon: <DeleteOutlined /> },
+                            record.type === 'tvshow' ? { key: 'season', label: 'Mùa', icon: <ZoomInOutlined /> } : null
                         ],
                         onClick: ({ key }) => handleActionClick(key, record)
                     }}

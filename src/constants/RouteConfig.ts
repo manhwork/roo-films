@@ -450,5 +450,55 @@ export const RouteConfig = {
         getPath: (_id: Watchlist['_id']) => {
             return `/watchlist/${_id}/detail`;
         }
+    },
+
+    // Season theo Content
+    ListSeasonOfContentPage: {
+        path: '/contents/:contentId/seasons',
+        paramKey: 'contentId',
+        getPath: (contentId: Content['_id']) => `/contents/${contentId}/seasons`
+    },
+    CreateSeasonOfContentPage: {
+        path: '/contents/:contentId/seasons/create',
+        paramKey: 'contentId',
+        getPath: (contentId: Content['_id']) => `/contents/${contentId}/seasons/create`
+    },
+    UpdateSeasonOfContentPage: {
+        path: '/contents/:contentId/seasons/:seasonId/update',
+        paramKeys: ['contentId', 'seasonId'],
+        getPath: (contentId: Content['_id'], seasonId: Season['_id']) =>
+            `/contents/${contentId}/seasons/${seasonId}/update`
+    },
+    DetailSeasonOfContentPage: {
+        path: '/contents/:contentId/seasons/:seasonId/detail',
+        paramKeys: ['contentId', 'seasonId'],
+        getPath: (contentId: Content['_id'], seasonId: Season['_id']) =>
+            `/contents/${contentId}/seasons/${seasonId}/detail`
+    },
+
+    // Episode theo Season
+    ListEpisodeOfSeasonPage: {
+        path: '/contents/:contentId/seasons/:seasonId/episodes',
+        paramKeys: ['contentId', 'seasonId'],
+        getPath: (contentId: Content['_id'], seasonId: Season['_id']) =>
+            `/contents/${contentId}/seasons/${seasonId}/episodes`
+    },
+    CreateEpisodeOfSeasonPage: {
+        path: '/contents/:contentId/seasons/:seasonId/episodes/create',
+        paramKeys: ['contentId', 'seasonId'],
+        getPath: (contentId: Content['_id'], seasonId: Season['_id']) =>
+            `/contents/${contentId}/seasons/${seasonId}/episodes/create`
+    },
+    UpdateEpisodeOfSeasonPage: {
+        path: '/contents/:contentId/seasons/:seasonId/episodes/:episodeId/update',
+        paramKeys: ['contentId', 'seasonId', 'episodeId'],
+        getPath: (contentId: Content['_id'], seasonId: Season['_id'], episodeId: Episode['_id']) =>
+            `/contents/${contentId}/seasons/${seasonId}/episodes/${episodeId}/update`
+    },
+    DetailEpisodeOfSeasonPage: {
+        path: '/contents/:contentId/seasons/:seasonId/episodes/:episodeId/detail',
+        paramKeys: ['contentId', 'seasonId', 'episodeId'],
+        getPath: (contentId: Content['_id'], seasonId: Season['_id'], episodeId: Episode['_id']) =>
+            `/contents/${contentId}/seasons/${seasonId}/episodes/${episodeId}/detail`
     }
 };

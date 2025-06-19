@@ -64,6 +64,14 @@ import UpdateCommentPage from './pages/authentication/CommentPage/UpdateCommentP
 import ListReviewPage from './pages/authentication/ReviewPage/ListReviewPage';
 import CreateReviewPage from './pages/authentication/ReviewPage/CreateReviewPage';
 import UpdateReviewPage from './pages/authentication/ReviewPage/UpdateReviewPage';
+import ListSeasonOfContentPage from './pages/authentication/SeasonPage/ListSeasonOfContentPage';
+import CreateSeasonOfContentPage from './pages/authentication/SeasonPage/CreateSeasonOfContentPage';
+import UpdateSeasonOfContentPage from './pages/authentication/SeasonPage/UpdateSeasonOfContentPage';
+import DetailSeasonOfContentPage from './pages/authentication/SeasonPage/DetailSeasonOfContentPage';
+import ListEpisodeOfSeasonPage from './pages/authentication/EpisodePage/ListEpisodeOfSeasonPage';
+import CreateEpisodeOfSeasonPage from './pages/authentication/EpisodePage/CreateEpisodeOfSeasonPage';
+import UpdateEpisodeOfSeasonPage from './pages/authentication/EpisodePage/UpdateEpisodeOfSeasonPage';
+import DetailEpisodeOfSeasonPage from './pages/authentication/EpisodePage/DetailEpisodeOfSeasonPage';
 
 const dashboardRoutes: RouteObject[] = [
     {
@@ -471,20 +479,75 @@ const dashboardRoutes: RouteObject[] = [
                 <UpdateReviewPage />
             </ProtectRoute>
         )
-    }
+    },
 
-    //     {
-    //         path: RouteConfig.ListUserRolePage.path,
-    //         element: <ListUserRolePage />
-    //     },
-    //     {
-    //         path: RouteConfig.CreateUserRolePage.path,
-    //         element: <CreateUserRolePage />
-    //     },
-    //     {
-    //         path: RouteConfig.UpdateUserRolePage.path,
-    //         element: <UpdateUserRolePage />
-    //     }
+    // Season theo Content
+    {
+        path: RouteConfig.ListSeasonOfContentPage.path,
+        element: (
+            <ProtectRoute>
+                <ListSeasonOfContentPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.CreateSeasonOfContentPage.path,
+        element: (
+            <ProtectRoute>
+                <CreateSeasonOfContentPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.UpdateSeasonOfContentPage.path,
+        element: (
+            <ProtectRoute>
+                <UpdateSeasonOfContentPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.DetailSeasonOfContentPage.path,
+        element: (
+            <ProtectRoute>
+                <DetailSeasonOfContentPage />
+            </ProtectRoute>
+        )
+    },
+
+    // Episode theo Season
+    {
+        path: RouteConfig.ListEpisodeOfSeasonPage.path,
+        element: (
+            <ProtectRoute>
+                <ListEpisodeOfSeasonPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.CreateEpisodeOfSeasonPage.path,
+        element: (
+            <ProtectRoute>
+                <CreateEpisodeOfSeasonPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.UpdateEpisodeOfSeasonPage.path,
+        element: (
+            <ProtectRoute>
+                <UpdateEpisodeOfSeasonPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.DetailEpisodeOfSeasonPage.path,
+        element: (
+            <ProtectRoute>
+                <DetailEpisodeOfSeasonPage />
+            </ProtectRoute>
+        )
+    }
 ];
 
 export const App: FC = () => {

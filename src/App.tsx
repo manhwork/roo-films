@@ -44,6 +44,27 @@ import { InternalErrorPage } from './pages/unauthentication/InternalErrorPage/In
 import { LoginPage } from './pages/unauthentication/LoginPage/LoginPage';
 import { NotFoundPage } from './pages/unauthentication/NotFoundPage/NotFoundPage';
 import { ProtectRoute } from './components/ProtectRoute/ProtectRoute';
+
+// Import các component mới
+import ListActorPage from './pages/authentication/ActorPage/ListActorPage';
+import CreateActorPage from './pages/authentication/ActorPage/CreateActorPage';
+import UpdateActorPage from './pages/authentication/ActorPage/UpdateActorPage';
+import ListGenresPage from './pages/authentication/GenresPage/ListGenresPage';
+import CreateGenresPage from './pages/authentication/GenresPage/CreateGenresPage';
+import UpdateGenresPage from './pages/authentication/GenresPage/UpdateGenresPage';
+import ListDirectorPage from './pages/authentication/DirectorPage/ListDirectorPage';
+import CreateDirectorPage from './pages/authentication/DirectorPage/CreateDirectorPage';
+import UpdateDirectorPage from './pages/authentication/DirectorPage/UpdateDirectorPage';
+import ListContentPage from './pages/authentication/ContentPage/ListContentPage';
+import CreateContentPage from './pages/authentication/ContentPage/CreateContentPage';
+import UpdateContentPage from './pages/authentication/ContentPage/UpdateContentPage';
+import ListCommentPage from './pages/authentication/CommentPage/ListCommentPage';
+import CreateCommentPage from './pages/authentication/CommentPage/CreateCommentPage';
+import UpdateCommentPage from './pages/authentication/CommentPage/UpdateCommentPage';
+import ListReviewPage from './pages/authentication/ReviewPage/ListReviewPage';
+import CreateReviewPage from './pages/authentication/ReviewPage/CreateReviewPage';
+import UpdateReviewPage from './pages/authentication/ReviewPage/UpdateReviewPage';
+
 const dashboardRoutes: RouteObject[] = [
     {
         path: RouteConfig.ListCustomerPage.path,
@@ -292,6 +313,162 @@ const dashboardRoutes: RouteObject[] = [
         element: (
             <ProtectRoute>
                 <SettingPage />
+            </ProtectRoute>
+        )
+    },
+
+    // Actor routes
+    {
+        path: RouteConfig.ListActorPage.path,
+        element: (
+            <ProtectRoute>
+                <ListActorPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.CreateActorPage.path,
+        element: (
+            <ProtectRoute>
+                <CreateActorPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.UpdateActorPage.path,
+        element: (
+            <ProtectRoute>
+                <UpdateActorPage />
+            </ProtectRoute>
+        )
+    },
+
+    // Genres routes
+    {
+        path: RouteConfig.ListGenresPage.path,
+        element: (
+            <ProtectRoute>
+                <ListGenresPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.CreateGenresPage.path,
+        element: (
+            <ProtectRoute>
+                <CreateGenresPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.UpdateGenresPage.path,
+        element: (
+            <ProtectRoute>
+                <UpdateGenresPage />
+            </ProtectRoute>
+        )
+    },
+
+    // Director routes
+    {
+        path: RouteConfig.ListDirectorPage.path,
+        element: (
+            <ProtectRoute>
+                <ListDirectorPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.CreateDirectorPage.path,
+        element: (
+            <ProtectRoute>
+                <CreateDirectorPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.UpdateDirectorPage.path,
+        element: (
+            <ProtectRoute>
+                <UpdateDirectorPage />
+            </ProtectRoute>
+        )
+    },
+
+    // Content routes
+    {
+        path: RouteConfig.ListContentPage.path,
+        element: (
+            <ProtectRoute>
+                <ListContentPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.CreateContentPage.path,
+        element: (
+            <ProtectRoute>
+                <CreateContentPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.UpdateContentPage.path,
+        element: (
+            <ProtectRoute>
+                <UpdateContentPage />
+            </ProtectRoute>
+        )
+    },
+
+    // Comment routes
+    {
+        path: RouteConfig.ListCommentPage.path,
+        element: (
+            <ProtectRoute>
+                <ListCommentPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.CreateCommentPage.path,
+        element: (
+            <ProtectRoute>
+                <CreateCommentPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.UpdateCommentPage.path,
+        element: (
+            <ProtectRoute>
+                <UpdateCommentPage />
+            </ProtectRoute>
+        )
+    },
+
+    // Review routes
+    {
+        path: RouteConfig.ListReviewPage.path,
+        element: (
+            <ProtectRoute>
+                <ListReviewPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.CreateReviewPage.path,
+        element: (
+            <ProtectRoute>
+                <CreateReviewPage />
+            </ProtectRoute>
+        )
+    },
+    {
+        path: RouteConfig.UpdateReviewPage.path,
+        element: (
+            <ProtectRoute>
+                <UpdateReviewPage />
             </ProtectRoute>
         )
     }

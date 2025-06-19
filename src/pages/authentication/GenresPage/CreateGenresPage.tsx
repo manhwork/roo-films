@@ -1,12 +1,7 @@
 import React from 'react';
-
+import FormMutationGenresPage from './FormMutationGenresPage';
 const CreateGenresPage: React.FC = () => {
-    return (
-        <div>
-            <h1>Thêm Thể loại mới</h1>
-            <p>Trang tạo thể loại mới</p>
-        </div>
-    );
+    return <FormMutationGenresPage _id={undefined} />;
 };
 
 export default CreateGenresPage;

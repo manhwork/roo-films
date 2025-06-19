@@ -1,12 +1,10 @@
 import React from 'react';
-
+import FormMutationDirectorPage from './FormMutationDirectorPage';
+import { useParams } from 'react-router-dom';
 const UpdateDirectorPage: React.FC = () => {
-    return (
-        <div>
-            <h1>Cập nhật Đạo diễn</h1>
-            <p>Trang cập nhật thông tin đạo diễn</p>
-        </div>
-    );
+    const { id } = useParams();
+
+    return <FormMutationDirectorPage _id={id} />;
 };
 
 export default UpdateDirectorPage;

@@ -1,5 +1,5 @@
-import TableAccountPage from './components/TableAccountPage';
+import TableUserPage from '../UserPage/TableUserPage';
 
 export default function ListUserPage() {
-    return <TableAccountPage />;
+    return <TableUserPage />;
 }

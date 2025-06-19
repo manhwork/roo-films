@@ -104,23 +104,23 @@ export const NavbarDashboard = ({ collapsed }: NavbarDashboardProps) => {
             label: 'Tổng quan',
             onClick: () => navigate(RouteConfig.DashBoardPage.path)
         },
-        // {
-        //     key: 'users',
-        //     icon: <UserOutlined />,
-        //     label: 'Quản lý người dùng',
-        //     children: [
-        //         {
-        //             key: 'users-list',
-        //             label: 'Danh sách người dùng',
-        //             onClick: () => navigate(RouteConfig.ListUserPage.path)
-        //         }
-        //         // {
-        //         //     key: 'users-roles',
-        //         //     label: 'Phân quyền',
-        //         //     onClick: () => navigate('/users/roles')
-        //         // }
-        //     ]
-        // },
+        {
+            key: 'users',
+            icon: <UserOutlined />,
+            label: 'Quản lý người dùng',
+            children: [
+                {
+                    key: 'users-list',
+                    label: 'Danh sách người dùng',
+                    onClick: () => navigate(RouteConfig.ListUserPage.path)
+                }
+                // {
+                //     key: 'users-roles',
+                //     label: 'Phân quyền',
+                //     onClick: () => navigate('/users/roles')
+                // }
+            ]
+        },
         {
             key: 'content',
             icon: <PlayCircleOutlined />,

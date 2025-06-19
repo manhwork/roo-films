@@ -1,12 +1,9 @@
 import React from 'react';
-
+import FormMutationGenresPage from './FormMutationGenresPage';
+import { useParams } from 'react-router-dom';
 const UpdateGenresPage: React.FC = () => {
-    return (
-        <div>
-            <h1>Cập nhật Thể loại</h1>
-            <p>Trang cập nhật thông tin thể loại</p>
-        </div>
-    );
+    const { id } = useParams();
+    return <FormMutationGenresPage _id={id} />;
 };
 
 export default UpdateGenresPage;

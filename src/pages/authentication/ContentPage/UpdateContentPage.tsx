@@ -1,12 +1,9 @@
 import React from 'react';
-
+import FormMutationContentPage from './FormMutationContentPage';
+import { useParams } from 'react-router-dom';
 const UpdateContentPage: React.FC = () => {
-    return (
-        <div>
-            <h1>Cập nhật Nội dung</h1>
-            <p>Trang cập nhật thông tin nội dung</p>
-        </div>
-    );
+    const { id } = useParams();
+    return <FormMutationContentPage _id={id} />;
 };
 
 export default UpdateContentPage;

@@ -1,12 +1,7 @@
 import React from 'react';
-
+import TableGenresPage from './TableGenresPage';
 const ListGenresPage: React.FC = () => {
-    return (
-        <div>
-            <h1>Danh sách Thể loại</h1>
-            <p>Trang quản lý danh sách thể loại</p>
-        </div>
-    );
+    return <TableGenresPage />;
 };
 
 export default ListGenresPage;

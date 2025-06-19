@@ -1,12 +1,7 @@
 import React from 'react';
-
+import FormMutationActorPage from './FormMutationActor';
 const CreateActorPage: React.FC = () => {
-    return (
-        <div>
-            <h1>Thêm Diễn viên mới</h1>
-            <p>Trang tạo diễn viên mới</p>
-        </div>
-    );
+    return <FormMutationActorPage _id={undefined} />;
 };
 
 export default CreateActorPage;

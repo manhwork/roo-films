@@ -1,12 +1,7 @@
 import React from 'react';
-
+import FormMutationContentPage from './FormMutationContentPage';
 const CreateContentPage: React.FC = () => {
-    return (
-        <div>
-            <h1>Thêm Nội dung mới</h1>
-            <p>Trang tạo nội dung mới</p>
-        </div>
-    );
+    return <FormMutationContentPage _id={undefined} />;
 };
 
 export default CreateContentPage;

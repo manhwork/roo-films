@@ -1,12 +1,7 @@
 import React from 'react';
-
+import TableReviewPage from './TableReviewPage';
 const ListReviewPage: React.FC = () => {
-    return (
-        <div>
-            <h1>Danh sách Đánh giá</h1>
-            <p>Trang quản lý danh sách đánh giá</p>
-        </div>
-    );
+    return <TableReviewPage />;
 };
 
 export default ListReviewPage;

@@ -2,7 +2,7 @@ export interface ModelBase {
     /** */
     _id: string;
     /** */
-    createdAt: string;
+    createdAt?: string;
     /** */
-    updatedAt: string;
+    updatedAt?: string;
 }

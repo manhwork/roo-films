@@ -1,12 +1,7 @@
 import React from 'react';
-
+import FormMutationCommentPage from './FormMutationCommentPage';
 const CreateCommentPage: React.FC = () => {
-    return (
-        <div>
-            <h1>Thêm Bình luận mới</h1>
-            <p>Trang tạo bình luận mới</p>
-        </div>
-    );
+    return <FormMutationCommentPage />;
 };
 
 export default CreateCommentPage;

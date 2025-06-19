@@ -1,12 +1,7 @@
 import React from 'react';
-
+import FormMutationDirectorPage from './FormMutationDirectorPage';
 const CreateDirectorPage: React.FC = () => {
-    return (
-        <div>
-            <h1>Thêm Đạo diễn mới</h1>
-            <p>Trang tạo đạo diễn mới</p>
-        </div>
-    );
+    return <FormMutationDirectorPage _id={undefined} />;
 };
 
 export default CreateDirectorPage;

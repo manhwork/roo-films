@@ -178,9 +178,9 @@ export default function ProfilePage() {
                     <Descriptions.Item label='Số điện thoại'>{userData.phone}</Descriptions.Item>
                     <Descriptions.Item label='Vai trò'>{userData.role_id}</Descriptions.Item>
                     <Descriptions.Item label='Trạng thái'>{userData.status}</Descriptions.Item>
-                    <Descriptions.Item label='Ngày tạo'>
-                        {new Date(userData.createdAt).toLocaleDateString()}
-                    </Descriptions.Item>
+                    {/* <Descriptions.Item label='Ngày tạo'> */}
+                    {/* {new Date(userData.createdAt).toLocaleDateString()} */}
+                    {/* </Descriptions.Item> */}
                 </Descriptions>
             ) : (
                 <Form layout='vertical' onFinish={handleProfileSubmit(onProfileSubmit)}>
@@ -371,10 +371,10 @@ export default function ProfilePage() {
                             <div style={{ marginTop: '8px' }}>
                                 <Space size='large'>
                                     <Text type='secondary'>
-                                        Ngày tạo: {new Date(userData.createdAt).toLocaleDateString()}
+                                        {/* Ngày tạo: {new Date(userData.createdAt ).toLocaleDateString()} */}
                                     </Text>
                                     <Text type='secondary'>
-                                        Cập nhật: {new Date(userData.updatedAt).toLocaleDateString()}
+                                        {/* Cập nhật: {new Date(userData.updatedAt).toLocaleDateString()} */}
                                     </Text>
                                 </Space>
                             </div>

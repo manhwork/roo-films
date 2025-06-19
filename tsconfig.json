@@ -5,7 +5,6 @@
         "noImplicitAny": false,
         "noUnusedLocals": false,
         "noUnusedParameters": false,
-        "skipLibCheck": true,
-        "suppressImplicitAnyIndexErrors": true
+        "skipLibCheck": true
     }
 }

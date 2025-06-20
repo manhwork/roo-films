@@ -80,7 +80,11 @@ export default function TableUserPage() {
         <div>
             <h1 className='text-[22px]'>Danh sách người dùng</h1>
             <div className='flex justify-end gap-4 mb-4'>
-                <Button type='primary' icon={<PlusOutlined />}>
+                <Button
+                    type='primary'
+                    icon={<PlusOutlined />}
+                    onClick={() => navigate(RouteConfig.CreateUserPage.path)}
+                >
                     Tạo mới
                 </Button>
             </div>

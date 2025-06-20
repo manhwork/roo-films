@@ -645,8 +645,8 @@ export const DashboardPage = () => {
                             top: '50%',
                             transform: 'translate(-50%, -50%)',
                             width: 1000, // Chiều rộng của báo cáo
-                            maxHeight: '90vh',
-                            overflowY: 'auto',
+                            // maxHeight: '90vh',
+                            // overflowY: 'auto',
                             background: '#fff',
                             padding: '20px'
                         }}

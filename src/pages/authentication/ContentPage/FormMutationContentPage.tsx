@@ -1,15 +1,19 @@
-import { Breadcrumb, Button, Form, Input, Spin } from 'antd';
+import { Breadcrumb, Button, Form, Input, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { Controller, useForm } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { RouteConfig } from '../../../constants';
+import axios from 'axios';
 
 interface ContentFormValues {
     title: string;
     originalTitle?: string;
+    description?: string;
     type?: string;
     releaseDate?: string;
     imdbRating?: number;
+    posterURL?: string;
+    status?: string;
     country?: string;
     language?: string;
 }
@@ -20,6 +24,8 @@ interface FormMutationContentPageProps {
 
 export default function FormMutationContentPage({ _id }: FormMutationContentPageProps) {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
     const {
         control,
         handleSubmit,
@@ -29,9 +35,12 @@ export default function FormMutationContentPage({ _id }: FormMutationContentPage
         defaultValues: {
             title: '',
             originalTitle: '',
+            description: '',
             type: '',
             releaseDate: '',
             imdbRating: undefined,
+            posterURL: '',
+            status: '',
             country: '',
             language: ''
         }
@@ -39,39 +48,81 @@ export default function FormMutationContentPage({ _id }: FormMutationContentPage
 
     useEffect(() => {
         if (_id) {
-            reset({
-                title: 'Bố Già',
-                originalTitle: 'Bo Gia',
-                type: 'movie',
-                releaseDate: '2021-03-05',
-                imdbRating: 8.1,
-                country: 'Việt Nam',
-                language: 'Tiếng Việt'
-            });
+            setLoading(true);
+            axios
+                .get(`http://localhost:3000/contents/${_id}`)
+                .then((res) => {
+                    reset({
+                        title: res.data.title,
+                        originalTitle: res.data.originaltitle,
+                        description: res.data.description,
+                        type: res.data.type,
+                        releaseDate: res.data.releasedate,
+                        imdbRating: res.data.imdbrating,
+                        posterURL: res.data.posterurl,
+                        status: res.data.status,
+                        country: res.data.country,
+                        language: res.data.language
+                    });
+                })
+                .finally(() => setLoading(false));
         } else {
             reset({
                 title: '',
                 originalTitle: '',
+                description: '',
                 type: '',
                 releaseDate: '',
                 imdbRating: undefined,
+                posterURL: '',
+                status: '',
                 country: '',
                 language: ''
             });
         }
     }, [_id, reset]);
 
-    const onSubmit = (values: ContentFormValues) => {
-        if (_id) {
-            console.log('Update content:', values);
-        } else {
-            console.log('Create content:', values);
+    const onSubmit = async (values: ContentFormValues) => {
+        setLoading(true);
+        try {
+            if (_id) {
+                await axios.put(`http://localhost:3000/contents/${_id}`, {
+                    Title: values.title,
+                    OriginalTitle: values.originalTitle,
+                    Description: values.description,
+                    Type: values.type, // thêm dòng này
+                    ReleaseDate: values.releaseDate,
+                    IMDBRating: values.imdbRating,
+                    PosterURL: values.posterURL,
+                    Status: values.status,
+                    Country: values.country,
+                    Language: values.language
+                });
+                message.success('Cập nhật nội dung thành công');
+            } else {
+                await axios.post('http://localhost:3000/contents', {
+                    Title: values.title,
+                    OriginalTitle: values.originalTitle,
+                    Description: values.description,
+                    Type: values.type,
+                    ReleaseDate: values.releaseDate,
+                    IMDBRating: values.imdbRating,
+                    PosterURL: values.posterURL,
+                    Status: values.status,
+                    Country: values.country,
+                    Language: values.language
+                });
+                message.success('Tạo mới nội dung thành công');
+            }
+            navigate(RouteConfig.ListContentPage.path);
+        } catch {
+            message.error('Lưu thất bại');
         }
-        navigate(RouteConfig.ListContentPage.path);
+        setLoading(false);
     };
 
     return (
-        <Spin spinning={false}>
+        <Spin spinning={loading}>
             <div>
                 <div className='flex justify-between items-center mb-6'>
                     <Breadcrumb
@@ -112,6 +163,15 @@ export default function FormMutationContentPage({ _id }: FormMutationContentPage
                             )}
                         />
                         <Controller
+                            name='description'
+                            control={control}
+                            render={({ field }) => (
+                                <Form.Item label='Mô tả' help={errors.description?.message}>
+                                    <Input.TextArea placeholder='Nhập mô tả' {...field} />
+                                </Form.Item>
+                            )}
+                        />
+                        <Controller
                             name='type'
                             control={control}
                             render={({ field }) => (
@@ -135,6 +195,24 @@ export default function FormMutationContentPage({ _id }: FormMutationContentPage
                             render={({ field }) => (
                                 <Form.Item label='IMDB' help={errors.imdbRating?.message}>
                                     <Input type='number' placeholder='IMDB' {...field} />
+                                </Form.Item>
+                            )}
+                        />
+                        <Controller
+                            name='posterURL'
+                            control={control}
+                            render={({ field }) => (
+                                <Form.Item label='Poster URL' help={errors.posterURL?.message}>
+                                    <Input placeholder='Nhập poster URL' {...field} />
+                                </Form.Item>
+                            )}
+                        />
+                        <Controller
+                            name='status'
+                            control={control}
+                            render={({ field }) => (
+                                <Form.Item label='Trạng thái' help={errors.status?.message}>
+                                    <Input placeholder='Ongoing/Completed/Canceled' {...field} />
                                 </Form.Item>
                             )}
                         />

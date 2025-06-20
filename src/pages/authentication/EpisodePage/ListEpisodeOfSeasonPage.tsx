@@ -1,38 +1,59 @@
 import Table, { ColumnsType } from 'antd/es/table';
-import { Button, Breadcrumb, Dropdown } from 'antd';
+import { Button, Breadcrumb, Dropdown, message } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
-import { PlusOutlined, EditOutlined, DeleteOutlined, ZoomInOutlined, MoreOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import { RouteConfig } from '../../../constants';
 import { Episode } from '../../../models/Episode';
-
-const fakeData: Episode[] = [
-    {
-        _id: '1',
-        seasonID: '1',
-        episodeNumber: 1,
-        title: 'Tập 1',
-        description: 'Mở đầu',
-        duration: 45,
-        videoURL: '',
-        thumbnailURL: '',
-        releaseDate: '2020-01-01',
-        viewCount: 1000,
-        createdAt: '',
-        updatedAt: ''
-    }
-];
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function ListEpisodeOfSeasonPage() {
     const navigate = useNavigate();
     const { contentId, seasonId } = useParams();
+    const [data, setData] = useState<Episode[]>([]);
+    const [loading, setLoading] = useState(false);
 
-    const handleActionClick = (key: string, record: Episode) => {
+    const fetchEpisodes = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get(`http://localhost:3000/seasons/${seasonId}/episodes`);
+            setData(
+                (res.data || []).map((item: any) => ({
+                    _id: item.episodeid?.toString(),
+                    seasonID: item.seasonid?.toString(),
+                    episodeNumber: item.episodenumber,
+                    title: item.title,
+                    description: item.description,
+                    duration: item.duration,
+                    videoURL: item.videourl,
+                    thumbnailURL: item.thumbnailurl,
+                    releaseDate: item.releasedate,
+                    viewCount: item.viewcount,
+                    createdAt: item.createdat,
+                    updatedAt: item.updatedat
+                }))
+            );
+        } catch {
+            message.error('Không thể tải danh sách tập');
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        if (seasonId) fetchEpisodes();
+    }, [seasonId]);
+
+    const handleActionClick = async (key: string, record: Episode) => {
         if (key === 'edit') {
             navigate(RouteConfig.UpdateEpisodeOfSeasonPage.getPath(String(contentId), String(seasonId), record._id));
         } else if (key === 'delete') {
-            console.log('Xoá', record);
-        } else if (key === 'episode') {
-            navigate(RouteConfig.DetailEpisodeOfSeasonPage.getPath(String(contentId), String(seasonId), record._id));
+            try {
+                await axios.delete(`http://localhost:3000/seasons/${seasonId}/episodes/${record._id}`);
+                fetchEpisodes();
+                message.success('Đã xoá tập');
+            } catch {
+                message.error('Xoá thất bại');
+            }
         }
     };
 
@@ -54,7 +75,6 @@ export default function ListEpisodeOfSeasonPage() {
                         items: [
                             { key: 'edit', label: 'Sửa', icon: <EditOutlined /> },
                             { key: 'delete', label: 'Xoá', icon: <DeleteOutlined /> }
-                            // { key: 'episode', label: 'Tập', icon: <ZoomInOutlined /> }
                         ],
                         onClick: ({ key }) => handleActionClick(key, record)
                     }}
@@ -86,7 +106,7 @@ export default function ListEpisodeOfSeasonPage() {
                 ]}
                 className='mb-4'
             />
-            <h1 className='text-[22px]'>Danh sách tập phim Phía trước là bầu trời mùa 1 </h1>
+            <h1 className='text-[22px]'>Danh sách tập phim</h1>
             <div className='flex justify-end gap-4 mb-4'>
                 <Button
                     type='primary'
@@ -103,10 +123,11 @@ export default function ListEpisodeOfSeasonPage() {
                 bordered
                 size='small'
                 columns={columns}
-                dataSource={fakeData}
+                dataSource={data}
+                loading={loading}
                 scroll={{ x: 800 }}
                 pagination={{
-                    total: fakeData.length,
+                    total: data.length,
                     position: ['bottomRight'],
                     showSizeChanger: true,
                     showTotal: (total) => `Tổng ${total} tập`

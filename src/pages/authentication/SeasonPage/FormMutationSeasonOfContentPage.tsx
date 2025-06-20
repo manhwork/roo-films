@@ -1,8 +1,9 @@
-import { Breadcrumb, Button, Form, Input, Spin } from 'antd';
+import { Breadcrumb, Button, Form, Input, Spin, message } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Controller, useForm } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { RouteConfig } from '../../../constants';
+import axios from 'axios';
 
 interface SeasonFormValues {
     title?: string;
@@ -19,6 +20,8 @@ interface FormMutationSeasonOfContentPageProps {
 export default function FormMutationSeasonOfContentPage({ _id }: FormMutationSeasonOfContentPageProps) {
     const navigate = useNavigate();
     const { contentId } = useParams();
+    const [loading, setLoading] = useState(false);
+
     const {
         control,
         handleSubmit,
@@ -35,14 +38,20 @@ export default function FormMutationSeasonOfContentPage({ _id }: FormMutationSea
     });
 
     useEffect(() => {
-        if (_id) {
-            reset({
-                title: 'Mùa 1',
-                seasonNumber: 1,
-                posterURL: '',
-                releaseDate: '2020-01-01',
-                episodeCount: 10
-            });
+        if (_id && contentId) {
+            setLoading(true);
+            axios
+                .get(`http://localhost:3000/contents/${contentId}/seasons/${_id}`)
+                .then((res) => {
+                    reset({
+                        title: res.data.title,
+                        seasonNumber: res.data.seasonnumber,
+                        posterURL: res.data.posterurl,
+                        releaseDate: res.data.releasedate,
+                        episodeCount: res.data.episodecount
+                    });
+                })
+                .finally(() => setLoading(false));
         } else {
             reset({
                 title: '',
@@ -52,19 +61,39 @@ export default function FormMutationSeasonOfContentPage({ _id }: FormMutationSea
                 episodeCount: 0
             });
         }
-    }, [_id, reset]);
+    }, [_id, contentId, reset]);
 
-    const onSubmit = (values: SeasonFormValues) => {
-        if (_id) {
-            console.log('Update season:', values);
-        } else {
-            console.log('Create season:', values);
+    const onSubmit = async (values: SeasonFormValues) => {
+        setLoading(true);
+        try {
+            if (_id) {
+                await axios.put(`http://localhost:3000/contents/${contentId}/seasons/${_id}`, {
+                    SeasonNumber: values.seasonNumber, // thêm dòng này
+                    Title: values.title,
+                    PosterURL: values.posterURL,
+                    ReleaseDate: values.releaseDate,
+                    EpisodeCount: values.episodeCount
+                });
+                message.success('Cập nhật mùa thành công');
+            } else {
+                await axios.post(`http://localhost:3000/contents/${contentId}/seasons`, {
+                    SeasonNumber: values.seasonNumber,
+                    Title: values.title,
+                    PosterURL: values.posterURL,
+                    ReleaseDate: values.releaseDate,
+                    EpisodeCount: values.episodeCount
+                });
+                message.success('Tạo mùa mới thành công');
+            }
+            navigate(RouteConfig.ListSeasonOfContentPage.getPath(String(contentId)));
+        } catch {
+            message.error('Lưu thất bại');
         }
-        navigate(RouteConfig.ListSeasonOfContentPage.getPath(String(contentId)));
+        setLoading(false);
     };
 
     return (
-        <Spin spinning={false}>
+        <Spin spinning={loading}>
             <div>
                 <div className='flex justify-between items-center mb-6'>
                     <Breadcrumb

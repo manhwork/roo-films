@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function EngagementTimelineStackedLineChart() {
+export default function EngagementTimelineStackedLineChart({ onRendered }: { onRendered?: () => void } = {}) {
     const [days, setDays] = useState<string[]>([]);
     const [likes, setLikes] = useState<number[]>([]);
     const [comments, setComments] = useState<number[]>([]);
@@ -87,7 +87,13 @@ export default function EngagementTimelineStackedLineChart() {
 
     return (
         <Card title='Tổng số lượt like/comment theo ngày'>
-            <ReactECharts opts={{ height: 'auto', width: 'auto' }} option={option} />
+            <ReactECharts
+                opts={{ height: 'auto', width: 'auto' }}
+                option={option}
+                onChartReady={() => {
+                    onRendered?.();
+                }}
+            />
         </Card>
     );
 }

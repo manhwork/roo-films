@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function ViewsByGenrePieChart() {
+export default function ViewsByGenrePieChart({ onRendered }: { onRendered?: () => void } = {}) {
     const [data, setData] = useState<any[]>([]);
 
     useEffect(() => {
@@ -36,7 +36,13 @@ export default function ViewsByGenrePieChart() {
     };
     return (
         <Card style={{ marginTop: 20 }}>
-            <ReactECharts opts={{ height: 350, width: 'auto' }} option={option} />
+            <ReactECharts
+                opts={{ height: 350, width: 'auto' }}
+                option={option}
+                onChartReady={() => {
+                    onRendered?.();
+                }}
+            />
         </Card>
     );
 }

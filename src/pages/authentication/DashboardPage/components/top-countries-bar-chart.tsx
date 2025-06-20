@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function TopCountriesBarChart() {
+export default function TopCountriesBarChart({ onRendered }: { onRendered?: () => void } = {}) {
     const [countries, setCountries] = useState<string[]>([]);
     const [views, setViews] = useState<number[]>([]);
 
@@ -57,7 +57,13 @@ export default function TopCountriesBarChart() {
 
     return (
         <Card title='Top quốc gia có lượng xem cao'>
-            <ReactECharts opts={{ height: 'auto', width: 'auto' }} option={option} />
+            <ReactECharts
+                opts={{ height: 'auto', width: 'auto' }}
+                option={option}
+                onChartReady={() => {
+                    onRendered?.();
+                }}
+            />
         </Card>
     );
 }

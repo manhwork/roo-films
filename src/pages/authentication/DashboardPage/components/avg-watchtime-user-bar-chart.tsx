@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function AvgWatchtimeUserBarChart() {
+export default function AvgWatchtimeUserBarChart({ onRendered }: { onRendered?: () => void } = {}) {
     const [users, setUsers] = useState<string[]>([]);
     const [avgWatchTime, setAvgWatchTime] = useState<number[]>([]);
 
@@ -24,7 +24,13 @@ export default function AvgWatchtimeUserBarChart() {
     };
     return (
         <Card style={{ marginTop: 20 }}>
-            <ReactECharts opts={{ height: 300, width: 'auto' }} option={option} />
+            <ReactECharts
+                opts={{ height: 300, width: 'auto' }}
+                option={option}
+                onChartReady={() => {
+                    onRendered?.();
+                }}
+            />
         </Card>
     );
 }

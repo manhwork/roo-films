@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function TopUsersBarChart() {
+export default function TopUsersBarChart({ onRendered }: { onRendered?: () => void } = {}) {
     const [users, setUsers] = useState<string[]>([]);
     const [views, setViews] = useState<number[]>([]);
 
@@ -24,7 +24,13 @@ export default function TopUsersBarChart() {
     };
     return (
         <Card style={{ marginTop: 20 }}>
-            <ReactECharts opts={{ height: 300, width: 'auto' }} option={option} />
+            <ReactECharts
+                opts={{ height: 300, width: 'auto' }}
+                option={option}
+                onChartReady={() => {
+                    onRendered?.();
+                }}
+            />
         </Card>
     );
 }

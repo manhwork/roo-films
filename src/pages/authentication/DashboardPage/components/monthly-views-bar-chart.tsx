@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function MonthlyViewsBarChart() {
+export default function MonthlyViewsBarChart({ onRendered }: { onRendered?: () => void } = {}) {
     const [months, setMonths] = useState<string[]>([]);
     const [views, setViews] = useState<number[]>([]);
 
@@ -25,7 +25,13 @@ export default function MonthlyViewsBarChart() {
     };
     return (
         <Card style={{ marginTop: 20 }}>
-            <ReactECharts opts={{ height: 300, width: 'auto' }} option={option} />
+            <ReactECharts
+                opts={{ height: 300, width: 'auto' }}
+                option={option}
+                onChartReady={() => {
+                    onRendered?.();
+                }}
+            />
         </Card>
     );
 }

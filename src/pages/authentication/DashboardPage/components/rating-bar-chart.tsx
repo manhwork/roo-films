@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function RatingBarChart() {
+export default function RatingBarChart({ onRendered }: { onRendered?: () => void } = {}) {
     const [months, setMonths] = useState<string[]>([]);
     const [ratings, setRatings] = useState<number[]>([]);
 

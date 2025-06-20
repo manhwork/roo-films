@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function EngagementTypePieChart() {
+export default function EngagementTypePieChart({ onRendered }: { onRendered?: () => void } = {}) {
     const [data, setData] = useState<any[]>([]);
 
     useEffect(() => {
@@ -65,7 +65,13 @@ export default function EngagementTypePieChart() {
 
     return (
         <Card title='Phân loại tương tác'>
-            <ReactECharts opts={{ height: 'auto', width: 'auto' }} option={option} />
+            <ReactECharts
+                opts={{ height: 'auto', width: 'auto' }}
+                option={option}
+                onChartReady={() => {
+                    onRendered?.();
+                }}
+            />
         </Card>
     );
 }

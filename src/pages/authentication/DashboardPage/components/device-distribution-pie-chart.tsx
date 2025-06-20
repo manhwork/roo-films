@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function DeviceDistributionPieChart() {
+export default function DeviceDistributionPieChart({ onRendered }: { onRendered?: () => void } = {}) {
     const [data, setData] = useState<any[]>([]);
 
     useEffect(() => {
@@ -52,7 +52,13 @@ export default function DeviceDistributionPieChart() {
 
     return (
         <Card title='Phân bổ thiết bị'>
-            <ReactECharts opts={{ height: 'auto', width: 'auto' }} option={option} />
+            <ReactECharts
+                opts={{ height: 'auto', width: 'auto' }}
+                option={option}
+                onChartReady={() => {
+                    onRendered?.();
+                }}
+            />
         </Card>
     );
 }

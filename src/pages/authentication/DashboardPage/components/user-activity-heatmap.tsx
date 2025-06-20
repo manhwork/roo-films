@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function UserActivityHeatmap() {
+export default function UserActivityHeatmap({ onRendered }: { onRendered?: () => void } = {}) {
     const [heatmapData, setHeatmapData] = useState<any[]>([]);
     const [days, setDays] = useState<string[]>([]);
     const [hours, setHours] = useState<number[]>([]);
@@ -103,7 +103,13 @@ export default function UserActivityHeatmap() {
 
     return (
         <Card title='Hành vi người dùng theo thời gian trong ngày'>
-            <ReactECharts opts={{ height: 'auto', width: 'auto' }} option={option} />
+            <ReactECharts
+                opts={{ height: 'auto', width: 'auto' }}
+                option={option}
+                onChartReady={() => {
+                    onRendered?.();
+                }}
+            />
         </Card>
     );
 }

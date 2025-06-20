@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function PopularBrowsersBarChart() {
+export default function PopularBrowsersBarChart({ onRendered }: { onRendered?: () => void } = {}) {
     const [browsers, setBrowsers] = useState<string[]>([]);
     const [counts, setCounts] = useState<number[]>([]);
 
@@ -45,7 +45,13 @@ export default function PopularBrowsersBarChart() {
 
     return (
         <Card title='Trình duyệt phổ biến'>
-            <ReactECharts opts={{ height: 'auto', width: 'auto' }} option={option} />
+            <ReactECharts
+                opts={{ height: 'auto', width: 'auto' }}
+                option={option}
+                onChartReady={() => {
+                    onRendered?.();
+                }}
+            />
         </Card>
     );
 }

@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function UserLocationMapChart() {
+export default function UserLocationMapChart({ onRendered }: { onRendered?: () => void } = {}) {
     const [data, setData] = useState<{ value: number; name: string }[]>([]);
 
     useEffect(() => {
@@ -77,7 +77,14 @@ export default function UserLocationMapChart() {
 
     return (
         <Card title='Phân bố người dùng theo tỉnh thành'>
-            <ReactECharts opts={{ height: 1000, width: 'auto' }} option={option} style={{ height: '1000px' }} />
+            <ReactECharts
+                opts={{ height: 1000, width: 'auto' }}
+                option={option}
+                style={{ height: '1000px' }}
+                onChartReady={() => {
+                    onRendered?.();
+                }}
+            />
         </Card>
     );
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Controller, useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 import { RouteConfig } from '../../../constants';
+import axios from 'axios';
 
 interface GenresFormValues {
     genreName: string;
@@ -26,17 +27,29 @@ export default function FormMutationGenresPage({ _id }: FormMutationGenresPagePr
 
     useEffect(() => {
         if (_id) {
-            reset({ genreName: 'Hành động', description: 'Phim hành động' });
+            // Lấy dữ liệu genres từ API để fill form khi sửa
+            axios.get(`http://localhost:3000/genres/${_id}`).then((res) => {
+                reset({
+                    genreName: res.data.genrename,
+                    description: res.data.description
+                });
+            });
         } else {
             reset({ genreName: '', description: '' });
         }
     }, [_id, reset]);
 
-    const onSubmit = (values: GenresFormValues) => {
+    const onSubmit = async (values: GenresFormValues) => {
         if (_id) {
-            console.log('Update genres:', values);
+            await axios.put(`http://localhost:3000/genres/${_id}`, {
+                GenreName: values.genreName,
+                Description: values.description
+            });
         } else {
-            console.log('Create genres:', values);
+            await axios.post('http://localhost:3000/genres', {
+                GenreName: values.genreName,
+                Description: values.description
+            });
         }
         navigate(RouteConfig.ListGenresPage.path);
     };

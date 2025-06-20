@@ -1,8 +1,9 @@
-import { Breadcrumb, Button, Form, Input, Spin } from 'antd';
+import { Breadcrumb, Button, Form, Input, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { RouteConfig } from '../../../constants';
 import { Controller, useForm } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { http } from '../../../utils/http';
 
 // Định nghĩa type cho form Actor
 interface ActorFormValues {
@@ -20,6 +21,7 @@ interface FormMutationActorPageProps {
 
 export default function FormMutationActorPage({ _id }: FormMutationActorPageProps) {
     const navigate = useNavigate();
+    const [data, setData] = useState<ActorFormValues | null>(null);
     const {
         control,
         handleSubmit,
@@ -39,16 +41,24 @@ export default function FormMutationActorPage({ _id }: FormMutationActorPageProp
     // Nếu có _id thì giả lập fetch dữ liệu và reset form (chưa cần API thật)
     useEffect(() => {
         if (_id) {
-            // Giả lập dữ liệu actor để update
-            const fakeActor: ActorFormValues = {
-                name: 'Ngô Thanh Vân',
-                originalName: 'Veronica Ngo',
-                bio: 'Diễn viên nổi tiếng Việt Nam',
-                birthDate: '1979-02-26',
-                nationality: 'Việt Nam',
-                photoURL: 'https://i.imgur.com/1.jpg'
+            const fetchActorData = async () => {
+                try {
+                    const response = await http.get(`/actors/${_id}`);
+                    // Map dữ liệu từ API về đúng với form
+                    const actor = response.data;
+                    reset({
+                        name: actor.name || '',
+                        originalName: actor.originalname || '',
+                        bio: actor.bio || '',
+                        birthDate: actor.birthdate ? actor.birthdate.slice(0, 10) : '',
+                        nationality: actor.nationality || '',
+                        photoURL: actor.photourl || ''
+                    });
+                } catch (error) {
+                    console.error('Failed to fetch actor data:', error);
+                }
             };
-            reset(fakeActor);
+            fetchActorData();
         } else {
             reset({
                 name: '',
@@ -62,13 +72,36 @@ export default function FormMutationActorPage({ _id }: FormMutationActorPageProp
     }, [_id, reset]);
 
     // Fake submit
-    const onSubmit = (values: ActorFormValues) => {
-        if (_id) {
-            console.log('Update actor:', values);
-        } else {
-            console.log('Create actor:', values);
+    const onSubmit = async (values: ActorFormValues) => {
+        try {
+            if (_id) {
+                // Update actor
+                await http.put(`/actors/${_id}`, {
+                    Name: values.name,
+                    OriginalName: values.originalName,
+                    Bio: values.bio,
+                    BirthDate: values.birthDate,
+                    Nationality: values.nationality,
+                    PhotoURL: values.photoURL
+                });
+                message.success('Cập nhật diễn viên thành công!');
+            } else {
+                // Create actor
+                await http.post('/actors', {
+                    Name: values.name,
+                    OriginalName: values.originalName,
+                    Bio: values.bio,
+                    BirthDate: values.birthDate,
+                    Nationality: values.nationality,
+                    PhotoURL: values.photoURL
+                });
+                message.success('Tạo mới diễn viên thành công!');
+            }
+            navigate(RouteConfig.ListActorPage.path);
+        } catch (error) {
+            message.error('Có lỗi xảy ra!');
+            console.error(error);
         }
-        navigate(RouteConfig.ListActorPage.path);
     };
 
     return (

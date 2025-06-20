@@ -55,7 +55,7 @@ export function useFetchData<T = any>(url: string, options: FetchOptions = {}) {
                 setLoading(false);
             }
         }
-    }, [url, options]);
+    }, [url, JSON.stringify(options)]);
 
     useEffect(() => {
         fetchData();

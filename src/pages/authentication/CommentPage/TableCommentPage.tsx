@@ -1,5 +1,4 @@
 import Table, { ColumnsType } from 'antd/es/table';
-
 import { Button, Space } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import { useFetchData } from '../../../hooks/useFetchData';
@@ -8,58 +7,29 @@ import { Comment } from '../../../models/Comment';
 export default function TableCommentPage() {
     const { data, error, loading, refetch } = useFetchData('/comments');
 
-    const fakeData: Comment[] = [
-        {
-            _id: '1',
-            userID: '1',
-            contentID: '1',
-            episodeID: '',
-            parentCommentID: '',
-            content: 'Phim hay quá!',
-            commentDate: '2023-06-01',
-            likeCount: 10
-        },
-        {
-            _id: '2',
-            userID: '2',
-            contentID: '1',
-            episodeID: '',
-            parentCommentID: '',
-            content: 'Tôi thích diễn viên chính.',
-            commentDate: '2023-06-02',
-            likeCount: 5
-        },
-        {
-            _id: '3',
-            userID: '3',
-            contentID: '2',
-            episodeID: '',
-            parentCommentID: '',
-            content: 'Kịch bản xuất sắc.',
-            commentDate: '2023-06-03',
-            likeCount: 8
-        }
-    ];
+    // Mapping dữ liệu từ API về đúng định dạng cho bảng
+    const comments: Comment[] = (data?.data || []).map((item: any) => ({
+        _id: item.commentid?.toString(),
+        userID: item.userid?.toString(),
+        contentID: item.contentid?.toString(),
+        episodeID: item.episodeid ? item.episodeid.toString() : '',
+        parentCommentID: item.parentcommentid ? item.parentcommentid.toString() : '',
+        content: item.content,
+        commentDate: item.commentdate,
+        likeCount: item.likecount,
+        username: item.username, // nếu API trả về
+        avatar: item.avatar, // nếu API trả về
+        contentTitle: item.contenttitle // nếu API trả về
+    }));
 
     const columns: ColumnsType<Comment> = [
         { title: 'STT', key: 'key', render: (_, __, index) => index + 1, align: 'center', width: 50 },
         { title: 'Nội dung', dataIndex: 'content', key: 'content', width: 300 },
+        { title: 'Người dùng', dataIndex: 'username', key: 'username', width: 150 },
         { title: 'Ngày', dataIndex: 'commentDate', key: 'commentDate', width: 150 },
-        { title: 'Like', dataIndex: 'likeCount', key: 'likeCount', width: 80 }
-        // {
-        //     title: 'Hành động',
-        //     key: 'action',
-        //     fixed: 'right',
-        //     width: 80,
-        //     align: 'center',
-        //     render: (_, record) => (
-        //         <Space>
-        //             <Button icon={<DeleteOutlined />} size='small'>
-        //                 Xoá
-        //             </Button>
-        //         </Space>
-        //     )
-        // }
+        { title: 'Like', dataIndex: 'likeCount', key: 'likeCount', width: 80 },
+        { title: 'Phim', dataIndex: 'contentTitle', key: 'contentTitle', width: 200 }
+        // Có thể bổ sung thêm các cột khác nếu muốn
     ];
 
     return (
@@ -70,10 +40,11 @@ export default function TableCommentPage() {
                 bordered
                 size='small'
                 columns={columns}
-                dataSource={fakeData}
-                scroll={{ x: 700 }}
+                dataSource={comments}
+                loading={loading}
+                scroll={{ x: 900 }}
                 pagination={{
-                    total: fakeData.length,
+                    total: data?.total || 0,
                     position: ['bottomRight'],
                     showSizeChanger: true,
                     showTotal: (total) => `Tổng ${total} bản ghi`

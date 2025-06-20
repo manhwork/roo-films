@@ -1,29 +1,54 @@
 import Table, { ColumnsType } from 'antd/es/table';
-import { useFetchData } from '../../../hooks/useFetchData';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Genres } from '../../../models/Genres';
-import { Button, Dropdown, Space } from 'antd';
+import { Button, Dropdown } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import { RouteConfig } from '../../../constants';
 import { useNavigate } from 'react-router-dom';
 
 export default function TableGenresPage() {
-    const { data, error, loading, refetch } = useFetchData('/genres');
-
-    const fakeData: Genres[] = [
-        { _id: '1', genreName: 'Hành động', description: 'Phim hành động' },
-        { _id: '2', genreName: 'Tình cảm', description: 'Phim tình cảm' },
-        { _id: '3', genreName: 'Hài', description: 'Phim hài' }
-    ];
+    const [data, setData] = useState<Genres[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const navigate = useNavigate();
 
-    const handleActionClick = (key: string, record: Genres) => {
+    const fetchGenres = async (page = 1, limit = 10) => {
+        setLoading(true);
+        try {
+            const res = await axios.get('http://localhost:3000/genres', {
+                params: { page, limit }
+            });
+            setData(
+                res.data.data.map((item: any) => ({
+                    _id: item.genreid?.toString(),
+                    genreName: item.genrename,
+                    description: item.description
+                }))
+            );
+            setTotal(res.data.total);
+        } catch (err) {
+            // handle error
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchGenres(page, pageSize);
+    }, [page, pageSize]);
+
+    const handleActionClick = async (key: string, record: Genres) => {
         if (key === 'edit') {
             navigate(RouteConfig.UpdateGenresPage.getPath(record._id));
         } else if (key === 'delete') {
-            console.log('Xoá', record);
+            await axios.delete(`http://localhost:3000/genres/${record._id}`);
+            fetchGenres(page, pageSize);
         }
     };
+
     const columns: ColumnsType<Genres> = [
         { title: 'STT', key: 'key', render: (_, __, index) => index + 1, align: 'center', width: 50 },
         { title: 'Tên thể loại', dataIndex: 'genreName', key: 'genreName', width: 200 },
@@ -70,11 +95,17 @@ export default function TableGenresPage() {
                 bordered
                 size='small'
                 columns={columns}
-                dataSource={fakeData}
+                dataSource={data}
+                loading={loading}
                 scroll={{ x: 800 }}
                 pagination={{
-                    total: fakeData.length,
-                    position: ['bottomRight'],
+                    total,
+                    current: page,
+                    pageSize,
+                    onChange: (p, ps) => {
+                        setPage(p);
+                        setPageSize(ps);
+                    },
                     showSizeChanger: true,
                     showTotal: (total) => `Tổng ${total} bản ghi`
                 }}

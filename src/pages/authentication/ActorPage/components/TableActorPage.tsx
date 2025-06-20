@@ -1,15 +1,17 @@
 import { DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Dropdown } from 'antd';
-import Table, { ColumnsType } from 'antd/es/table';
+import { Button, Dropdown, Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { useNavigate } from 'react-router-dom';
 import { useFetchData } from '../../../../hooks/useFetchData';
 import { Actor } from '../../../../models/Actor';
 import { RouteConfig } from '../../../../constants';
 
 export default function TableActorPage() {
-    const { data, error, loading, refetch } = useFetchData('/actors');
-
     const navigate = useNavigate();
+
+    const { data, loading, error, refetch } = useFetchData('/actors', {
+        method: 'GET'
+    });
 
     const handleActionClick = (key: string, record: Actor) => {
         if (key === 'edit') {
@@ -19,42 +21,22 @@ export default function TableActorPage() {
         }
     };
 
-    const fakeData: Actor[] = [
-        {
-            _id: '1',
-            name: 'Ngô Thanh Vân',
-            originalName: 'Veronica Ngo',
-            bio: '',
-            birthDate: '1979-02-26',
-            nationality: 'Việt Nam',
-            photoURL: 'https://i.imgur.com/1.jpg'
-        },
-        {
-            _id: '2',
-            name: 'Johnny Trí Nguyễn',
-            originalName: 'Johnny Nguyen',
-            bio: '',
-            birthDate: '1974-01-16',
-            nationality: 'Việt Nam',
-            photoURL: 'https://i.imgur.com/2.jpg'
-        },
-        {
-            _id: '3',
-            name: 'Lý Hải',
-            originalName: 'Ly Hai',
-            bio: '',
-            birthDate: '1968-09-28',
-            nationality: 'Việt Nam',
-            photoURL: 'https://i.imgur.com/3.jpg'
-        }
-    ];
-
+    // Map API data về đúng định dạng Actor
+    const actors: Actor[] = (data?.data || []).map((item: any) => ({
+        _id: item.actorid?.toString(),
+        name: item.name,
+        originalName: item.originalname,
+        bio: item.bio,
+        birthDate: item.birthdate ? item.birthdate.slice(0, 10) : '',
+        nationality: item.nationality,
+        photoURL: item.photourl
+    }));
     const columns: ColumnsType<Actor> = [
         {
             title: 'STT',
             dataIndex: 'key',
             key: 'key',
-            render: (_, __, index) => index + 1,
+            render: (_: any, __: any, index: number) => index + 1,
             align: 'center',
             width: 50
         },
@@ -82,19 +64,13 @@ export default function TableActorPage() {
             key: 'nationality',
             width: 150
         },
-        // {
-        //     title: 'Ảnh',
-        //     dataIndex: 'photoURL',
-        //     key: 'photoURL',
-        //     render: (_, record) => <Image src={record.photoURL || ''} width={50} height={50} />
-        // },
         {
             title: 'Hành động',
             key: 'action',
             fixed: 'right',
             width: 80,
             align: 'center',
-            render: (_, record) => (
+            render: (_: any, record: Actor) => (
                 <Dropdown
                     menu={{
                         items: [
@@ -132,21 +108,13 @@ export default function TableActorPage() {
                 bordered={true}
                 size='small'
                 columns={columns}
-                dataSource={fakeData}
-                // dataSource={tours}
-                // loading={isFetching || isLoading}
-                // rowSelection={{
-                //     selectedRowKeys,
-                //     onChange: (newSelectedRowKeys: React.Key[]) => {
-                //         setSelectedRowKeys(newSelectedRowKeys as string[]);
-                //     }
-                // }}
+                dataSource={actors}
+                loading={loading}
                 scroll={{ x: 1000 }}
-                // onChange={handleTableChange}
                 pagination={{
-                    // current: searchParams.pagination?.page,
-                    // pageSize: searchParams.pagination?.pageSize,
-                    total: data?.data?.pagination?.totalRows,
+                    current: data?.page,
+                    pageSize: data?.limit,
+                    total: data?.total,
                     position: ['bottomRight'],
                     className: 'ant-pagination-sticky',
                     showSizeChanger: true,

@@ -1,50 +1,42 @@
 import Table, { ColumnsType } from 'antd/es/table';
 import { useFetchData } from '../../../hooks/useFetchData';
 import { User } from '../../../models/User';
-import { Button, Dropdown, Space } from 'antd';
+import { Button, Dropdown } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { RouteConfig } from '../../../constants';
 
 export default function TableUserPage() {
     const { data, error, loading, refetch } = useFetchData('/users');
 
-    const fakeData: User[] = [
-        {
-            _id: '1',
-            username: 'admin',
-            password: '',
-            email: 'admin@gmail.com',
-            fullName: 'Quản trị viên',
-            avatar: '',
-            registerDate: '2023-01-01',
-            lastLogin: '',
-            isActive: true,
-            isAdmin: true
-        },
-        {
-            _id: '2',
-            username: 'user1',
-            password: '',
-            email: 'user1@gmail.com',
-            fullName: 'Người dùng 1',
-            avatar: '',
-            registerDate: '2023-01-02',
-            lastLogin: '',
-            isActive: true,
-            isAdmin: false
-        },
-        {
-            _id: '3',
-            username: 'user2',
-            password: '',
-            email: 'user2@gmail.com',
-            fullName: 'Người dùng 2',
-            avatar: '',
-            registerDate: '2023-01-03',
-            lastLogin: '',
-            isActive: false,
-            isAdmin: false
+    // Mapping dữ liệu từ API về đúng định dạng cho bảng
+    const users: User[] = (data?.data || []).map((item: any) => ({
+        _id: item.userid?.toString(),
+        username: item.username,
+        password: '', // không trả về password
+        email: item.email,
+        fullName: item.fullname,
+        avatar: item.avatar,
+        registerDate: item.registerdate,
+        lastLogin: item.lastlogin,
+        isActive: item.isactive,
+        isAdmin: item.isadmin
+    }));
+
+    const navigate = useNavigate();
+
+    const handleActionClick = (key: string, record: User) => {
+        switch (key) {
+            case 'edit':
+                navigate(RouteConfig.UpdateUserPage.getPath(record._id));
+                break;
+            case 'delete':
+                // Handle delete action
+                break;
+            default:
+                break;
         }
-    ];
+    };
 
     const columns: ColumnsType<User> = [
         { title: 'STT', key: 'key', render: (_, __, index) => index + 1, align: 'center', width: 50 },
@@ -71,8 +63,8 @@ export default function TableUserPage() {
                         items: [
                             { key: 'edit', label: 'Sửa', icon: <EditOutlined /> },
                             { key: 'delete', label: 'Xoá', icon: <DeleteOutlined /> }
-                        ]
-                        // onClick: ({ key }) => handleActionClick(key, record)
+                        ],
+                        onClick: ({ key }) => handleActionClick(key, record)
                     }}
                     trigger={['click']}
                 >
@@ -97,10 +89,11 @@ export default function TableUserPage() {
                 bordered
                 size='small'
                 columns={columns}
-                dataSource={fakeData}
+                dataSource={users}
+                loading={loading}
                 scroll={{ x: 900 }}
                 pagination={{
-                    total: fakeData.length,
+                    total: data?.total || 0,
                     position: ['bottomRight'],
                     showSizeChanger: true,
                     showTotal: (total) => `Tổng ${total} bản ghi`

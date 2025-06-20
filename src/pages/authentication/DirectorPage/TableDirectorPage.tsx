@@ -1,65 +1,75 @@
 import Table, { ColumnsType } from 'antd/es/table';
-import { useFetchData } from '../../../hooks/useFetchData';
+import { useEffect, useState } from 'react';
 import { Director } from '../../../models/Director';
-import { Button, Space, Image, Dropdown } from 'antd';
+import { Button, Dropdown, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { RouteConfig } from '../../../constants';
+import axios from 'axios';
 
 export default function TableDirectorPage() {
-    const { data, error, loading, refetch } = useFetchData('/directors');
-
-    const fakeData: Director[] = [
-        {
-            _id: '1',
-            name: 'Victor Vũ',
-            originalName: 'Victor Vu',
-            bio: '',
-            birthDate: '1975-11-25',
-            nationality: 'Việt Nam',
-            photoURL: 'https://i.imgur.com/4.jpg'
-        },
-        {
-            _id: '2',
-            name: 'Charlie Nguyễn',
-            originalName: 'Charlie Nguyen',
-            bio: '',
-            birthDate: '1968-09-25',
-            nationality: 'Việt Nam',
-            photoURL: 'https://i.imgur.com/5.jpg'
-        },
-        {
-            _id: '3',
-            name: 'Nguyễn Quang Dũng',
-            originalName: 'Nguyen Quang Dung',
-            bio: '',
-            birthDate: '1978-08-08',
-            nationality: 'Việt Nam',
-            photoURL: 'https://i.imgur.com/6.jpg'
-        }
-    ];
+    const [data, setData] = useState<Director[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const navigate = useNavigate();
-    const handleActionClick = (key: string, record: Director) => {
+
+    const fetchDirectors = async (page = 1, limit = 10) => {
+        setLoading(true);
+        try {
+            const res = await axios.get('http://localhost:3000/directors', {
+                params: { page, limit }
+            });
+            setData(
+                res.data.data.map((item: any) => ({
+                    _id: item.directorid?.toString(),
+                    name: item.name,
+                    originalName: item.originalname,
+                    bio: item.bio,
+                    birthDate: item.birthdate,
+                    nationality: item.nationality,
+                    photoURL: item.photourl
+                }))
+            );
+            setTotal(res.data.total);
+        } catch (err) {
+            message.error('Lỗi khi tải danh sách đạo diễn');
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchDirectors(page, pageSize);
+    }, [page, pageSize]);
+
+    const handleActionClick = async (key: string, record: Director) => {
         if (key === 'edit') {
             navigate(RouteConfig.UpdateDirectorPage.getPath(record._id));
         } else if (key === 'delete') {
-            console.log('Xoá', record);
+            try {
+                await axios.delete(`http://localhost:3000/directors/${record._id}`);
+                message.success('Xoá thành công');
+                fetchDirectors(page, pageSize);
+            } catch {
+                message.error('Xoá thất bại');
+            }
         }
     };
 
     const columns: ColumnsType<Director> = [
-        { title: 'STT', key: 'key', render: (_, __, index) => index + 1, align: 'center', width: 50 },
+        {
+            title: 'STT',
+            key: 'key',
+            render: (_, __, index) => (page - 1) * pageSize + index + 1,
+            align: 'center',
+            width: 50
+        },
         { title: 'Tên', dataIndex: 'name', key: 'name', width: 200 },
         { title: 'Tên gốc', dataIndex: 'originalName', key: 'originalName', width: 200 },
         { title: 'Ngày sinh', dataIndex: 'birthDate', key: 'birthDate', width: 150 },
         { title: 'Quốc tịch', dataIndex: 'nationality', key: 'nationality', width: 150 },
-        // {
-        //     title: 'Ảnh',
-        //     dataIndex: 'photoURL',
-        //     key: 'photoURL',
-        //     render: (_, record) => <Image src={record.photoURL || ''} width={50} height={50} />
-        // },
         {
             title: 'Hành động',
             key: 'action',
@@ -102,11 +112,17 @@ export default function TableDirectorPage() {
                 bordered
                 size='small'
                 columns={columns}
-                dataSource={fakeData}
+                dataSource={data}
+                loading={loading}
                 scroll={{ x: 1000 }}
                 pagination={{
-                    total: fakeData.length,
-                    position: ['bottomRight'],
+                    total,
+                    current: page,
+                    pageSize,
+                    onChange: (p, ps) => {
+                        setPage(p);
+                        setPageSize(ps);
+                    },
                     showSizeChanger: true,
                     showTotal: (total) => `Tổng ${total} bản ghi`
                 }}

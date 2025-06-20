@@ -7,9 +7,6 @@ import { NotificationProvider } from './components/Notification/Notification';
 import { AuthLayout } from './layouts/AuthLayout/AuthLayout';
 import { DashboardLayout } from './layouts/DashboardLayout/DashboardLayout';
 import RootLayout from './layouts/RootLayout/RootLayout';
-import CreateUserPage from './pages/authentication/AccountPage/CreateUserPage';
-import ListUserPage from './pages/authentication/AccountPage/ListUserPage';
-import UpdateUserPage from './pages/authentication/AccountPage/UpdateUserPage';
 import CreateBlogCategoryPage from './pages/authentication/BlogCategoryPage/CreateBlogCategoryPage';
 import ListBlogCategoryPage from './pages/authentication/BlogCategoryPage/ListBlogCategoryPage';
 import UpdateBlogCategoryPage from './pages/authentication/BlogCategoryPage/UpdateBlogCategoryPage';
@@ -72,6 +69,9 @@ import ListEpisodeOfSeasonPage from './pages/authentication/EpisodePage/ListEpis
 import CreateEpisodeOfSeasonPage from './pages/authentication/EpisodePage/CreateEpisodeOfSeasonPage';
 import UpdateEpisodeOfSeasonPage from './pages/authentication/EpisodePage/UpdateEpisodeOfSeasonPage';
 import DetailEpisodeOfSeasonPage from './pages/authentication/EpisodePage/DetailEpisodeOfSeasonPage';
+import ListUserPage from './pages/authentication/AccountPage/ListUserPage';
+import CreateUserPage from './pages/authentication/UserPage/CreateUserPage';
+import UpdateUserPage from './pages/authentication/UserPage/UpdateUserPage';
 
 const dashboardRoutes: RouteObject[] = [
     {

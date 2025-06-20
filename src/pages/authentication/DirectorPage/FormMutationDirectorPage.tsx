@@ -1,8 +1,9 @@
-import { Breadcrumb, Button, Form, Input, Spin } from 'antd';
+import { Breadcrumb, Button, Form, Input, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { Controller, useForm } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { RouteConfig } from '../../../constants';
+import axios from 'axios';
 
 interface DirectorFormValues {
     name: string;
@@ -19,6 +20,8 @@ interface FormMutationDirectorPageProps {
 
 export default function FormMutationDirectorPage({ _id }: FormMutationDirectorPageProps) {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
     const {
         control,
         handleSubmit,
@@ -37,30 +40,59 @@ export default function FormMutationDirectorPage({ _id }: FormMutationDirectorPa
 
     useEffect(() => {
         if (_id) {
-            reset({
-                name: 'Victor Vũ',
-                originalName: 'Victor Vu',
-                bio: 'Đạo diễn nổi tiếng',
-                birthDate: '1975-11-25',
-                nationality: 'Việt Nam',
-                photoURL: 'https://i.imgur.com/4.jpg'
-            });
+            setLoading(true);
+            axios
+                .get(`http://localhost:3000/directors/${_id}`)
+                .then((res) => {
+                    reset({
+                        name: res.data.name,
+                        originalName: res.data.originalname,
+                        bio: res.data.bio,
+                        birthDate: res.data.birthdate,
+                        nationality: res.data.nationality,
+                        photoURL: res.data.photourl
+                    });
+                })
+                .catch(() => message.error('Không tìm thấy đạo diễn'))
+                .finally(() => setLoading(false));
         } else {
             reset({ name: '', originalName: '', bio: '', birthDate: '', nationality: '', photoURL: '' });
         }
     }, [_id, reset]);
 
-    const onSubmit = (values: DirectorFormValues) => {
-        if (_id) {
-            console.log('Update director:', values);
-        } else {
-            console.log('Create director:', values);
+    const onSubmit = async (values: DirectorFormValues) => {
+        setLoading(true);
+        try {
+            if (_id) {
+                await axios.put(`http://localhost:3000/directors/${_id}`, {
+                    Name: values.name,
+                    OriginalName: values.originalName,
+                    Bio: values.bio,
+                    BirthDate: values.birthDate,
+                    Nationality: values.nationality,
+                    PhotoURL: values.photoURL
+                });
+                message.success('Cập nhật thành công');
+            } else {
+                await axios.post('http://localhost:3000/directors', {
+                    Name: values.name,
+                    OriginalName: values.originalName,
+                    Bio: values.bio,
+                    BirthDate: values.birthDate,
+                    Nationality: values.nationality,
+                    PhotoURL: values.photoURL
+                });
+                message.success('Tạo mới thành công');
+            }
+            navigate(RouteConfig.ListDirectorPage.path);
+        } catch {
+            message.error('Lưu thất bại');
         }
-        navigate(RouteConfig.ListDirectorPage.path);
+        setLoading(false);
     };
 
     return (
-        <Spin spinning={false}>
+        <Spin spinning={loading}>
             <div>
                 <div className='flex justify-between items-center mb-6'>
                     <Breadcrumb

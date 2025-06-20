@@ -1,15 +1,18 @@
-import { Breadcrumb, Button, Form, Input, Spin } from 'antd';
+import { Breadcrumb, Button, Form, Input, Spin, Switch } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { Controller, useForm } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { RouteConfig } from '../../../constants';
+import axios from 'axios';
 
 interface UserFormValues {
     username: string;
     fullName?: string;
     email: string;
+    avatar?: string;
     isActive?: boolean;
     isAdmin?: boolean;
+    password?: string; // chỉ dùng khi tạo mới
 }
 
 interface FormMutationUserPageProps {
@@ -18,40 +21,74 @@ interface FormMutationUserPageProps {
 
 export default function FormMutationUserPage({ _id }: FormMutationUserPageProps) {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
     const {
         control,
         handleSubmit,
         reset,
         formState: { errors }
     } = useForm<UserFormValues>({
-        defaultValues: { username: '', fullName: '', email: '', isActive: true, isAdmin: false }
+        defaultValues: {
+            username: '',
+            fullName: '',
+            email: '',
+            avatar: '',
+            isActive: true,
+            isAdmin: false,
+            password: ''
+        }
     });
 
     useEffect(() => {
         if (_id) {
-            reset({
-                username: 'admin',
-                fullName: 'Quản trị viên',
-                email: 'admin@gmail.com',
-                isActive: true,
-                isAdmin: true
-            });
+            setLoading(true);
+            axios
+                .get(`http://localhost:3000/users/${_id}`)
+                .then((res) => {
+                    reset({
+                        username: res.data.username,
+                        fullName: res.data.fullname,
+                        email: res.data.email,
+                        avatar: res.data.avatar,
+                        isActive: res.data.isactive,
+                        isAdmin: res.data.isadmin,
+                        password: res.data.password || '' // password có thể không trả về
+                    });
+                })
+                .finally(() => setLoading(false));
         } else {
-            reset({ username: '', fullName: '', email: '', isActive: true, isAdmin: false });
+            reset({ username: '', fullName: '', email: '', avatar: '', isActive: true, isAdmin: false, password: '' });
         }
     }, [_id, reset]);
 
-    const onSubmit = (values: UserFormValues) => {
-        if (_id) {
-            console.log('Update user:', values);
-        } else {
-            console.log('Create user:', values);
+    const onSubmit = async (values: UserFormValues) => {
+        setLoading(true);
+        try {
+            if (_id) {
+                await axios.put(`http://localhost:3000/users/${_id}`, {
+                    FullName: values.fullName,
+                    Avatar: values.avatar,
+                    IsActive: values.isActive,
+                    IsAdmin: values.isAdmin
+                });
+            } else {
+                await axios.post('http://localhost:3000/users', {
+                    Username: values.username,
+                    Password: values.password,
+                    Email: values.email,
+                    FullName: values.fullName,
+                    Avatar: values.avatar
+                });
+            }
+            navigate(RouteConfig.ListUserPage.path);
+        } finally {
+            setLoading(false);
         }
-        navigate(RouteConfig.ListUserPage.path);
     };
 
     return (
-        <Spin spinning={false}>
+        <Spin spinning={loading}>
             <div>
                 <div className='flex justify-between items-center mb-6'>
                     <Breadcrumb
@@ -78,7 +115,7 @@ export default function FormMutationUserPage({ _id }: FormMutationUserPageProps)
                             control={control}
                             render={({ field }) => (
                                 <Form.Item label='Tên đăng nhập' help={errors.username?.message} required>
-                                    <Input placeholder='Nhập tên đăng nhập' {...field} />
+                                    <Input placeholder='Nhập tên đăng nhập' {...field} disabled={!!_id} />
                                 </Form.Item>
                             )}
                         />
@@ -96,7 +133,45 @@ export default function FormMutationUserPage({ _id }: FormMutationUserPageProps)
                             control={control}
                             render={({ field }) => (
                                 <Form.Item label='Email' help={errors.email?.message} required>
-                                    <Input placeholder='Nhập email' {...field} />
+                                    <Input placeholder='Nhập email' {...field} disabled={!!_id} />
+                                </Form.Item>
+                            )}
+                        />
+                        <Controller
+                            name='avatar'
+                            control={control}
+                            render={({ field }) => (
+                                <Form.Item label='Avatar'>
+                                    <Input placeholder='Nhập link avatar' {...field} />
+                                </Form.Item>
+                            )}
+                        />
+                        {!_id && (
+                            <Controller
+                                name='password'
+                                control={control}
+                                render={({ field }) => (
+                                    <Form.Item label='Mật khẩu' help={errors.password?.message} required>
+                                        <Input.Password placeholder='Nhập mật khẩu' {...field} />
+                                    </Form.Item>
+                                )}
+                            />
+                        )}
+                        <Controller
+                            name='isActive'
+                            control={control}
+                            render={({ field }) => (
+                                <Form.Item label='Kích hoạt'>
+                                    <Switch checked={field.value} onChange={field.onChange} />
+                                </Form.Item>
+                            )}
+                        />
+                        <Controller
+                            name='isAdmin'
+                            control={control}
+                            render={({ field }) => (
+                                <Form.Item label='Quản trị viên'>
+                                    <Switch checked={field.value} onChange={field.onChange} />
                                 </Form.Item>
                             )}
                         />

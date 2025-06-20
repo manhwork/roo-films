@@ -28,7 +28,7 @@ export default function TableUserPage() {
     const handleActionClick = (key: string, record: User) => {
         switch (key) {
             case 'edit':
-                navigate(RouteConfig.UpdateUserPage.getPath(record._id));
+                navigate(RouteConfig.UpdateUserPage.getPath(record._id.toString()));
                 break;
             case 'delete':
                 // Handle delete action

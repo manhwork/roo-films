@@ -2,9 +2,22 @@ import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function EngagementTimelineStackedLineChart() {
-    const [data, setData] = useState<any[]>([]);
+    const [days, setDays] = useState<string[]>([]);
+    const [likes, setLikes] = useState<number[]>([]);
+    const [comments, setComments] = useState<number[]>([]);
+    const [reviews, setReviews] = useState<number[]>([]);
+
+    useEffect(() => {
+        axios.get('http://localhost:3000/dw/engagement/timeline').then((res) => {
+            setDays(res.data.map((item: any) => item.date));
+            setLikes(res.data.map((item: any) => Number(item.likes)));
+            setComments(res.data.map((item: any) => Number(item.comments)));
+            setReviews(res.data.map((item: any) => Number(item.reviews)));
+        });
+    }, []);
 
     const option: EChartsOption = {
         title: {
@@ -33,7 +46,7 @@ export default function EngagementTimelineStackedLineChart() {
         xAxis: {
             type: 'category',
             boundaryGap: false,
-            data: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12', 'T13', 'T14']
+            data: days
         },
         yAxis: {
             type: 'value'
@@ -47,7 +60,7 @@ export default function EngagementTimelineStackedLineChart() {
                 emphasis: {
                     focus: 'series'
                 },
-                data: [120, 132, 101, 134, 90, 230, 210, 182, 191, 234, 290, 330, 310, 123]
+                data: likes
             },
             {
                 name: 'Comment',
@@ -57,7 +70,7 @@ export default function EngagementTimelineStackedLineChart() {
                 emphasis: {
                     focus: 'series'
                 },
-                data: [220, 182, 191, 234, 290, 330, 310, 123, 442, 321, 90, 149, 210, 122]
+                data: comments
             },
             {
                 name: 'Review',
@@ -67,17 +80,10 @@ export default function EngagementTimelineStackedLineChart() {
                 emphasis: {
                     focus: 'series'
                 },
-                data: [150, 232, 201, 154, 190, 330, 410, 182, 191, 234, 290, 330, 310, 123]
+                data: reviews
             }
         ]
     };
-
-    useEffect(() => {
-        // TODO: Fetch data from API
-        // getEngagementTimelineData().then((response) => {
-        //     setData(response.data);
-        // });
-    }, []);
 
     return (
         <Card title='Tổng số lượt like/comment theo ngày'>

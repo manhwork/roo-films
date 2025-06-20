@@ -2,9 +2,18 @@ import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function PopularBrowsersBarChart() {
-    const [data, setData] = useState<any[]>([]);
+    const [browsers, setBrowsers] = useState<string[]>([]);
+    const [counts, setCounts] = useState<number[]>([]);
+
+    useEffect(() => {
+        axios.get('http://localhost:3000/dw/popular-browsers').then((res) => {
+            setBrowsers(res.data.map((item: any) => item.browser));
+            setCounts(res.data.map((item: any) => Number(item.count)));
+        });
+    }, []);
 
     const option: EChartsOption = {
         title: {
@@ -17,63 +26,22 @@ export default function PopularBrowsersBarChart() {
                 type: 'shadow'
             }
         },
-        legend: {
-            data: ['Chrome', 'Firefox', 'Safari', 'Edge', 'Opera'],
-            top: '10%'
-        },
-        grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
-        },
         xAxis: {
             type: 'category',
-            data: ['Windows', 'macOS', 'Linux', 'iOS', 'Android']
+            data: browsers
         },
         yAxis: {
             type: 'value'
         },
         series: [
             {
-                name: 'Chrome',
+                name: 'Lượt truy cập',
                 type: 'bar',
-                stack: 'total',
-                data: [320, 302, 301, 334, 390]
-            },
-            {
-                name: 'Firefox',
-                type: 'bar',
-                stack: 'total',
-                data: [120, 132, 101, 134, 90]
-            },
-            {
-                name: 'Safari',
-                type: 'bar',
-                stack: 'total',
-                data: [220, 182, 191, 234, 290]
-            },
-            {
-                name: 'Edge',
-                type: 'bar',
-                stack: 'total',
-                data: [150, 212, 201, 154, 190]
-            },
-            {
-                name: 'Opera',
-                type: 'bar',
-                stack: 'total',
-                data: [50, 32, 21, 34, 90]
+                data: counts,
+                itemStyle: { color: '#1890ff' }
             }
         ]
     };
-
-    useEffect(() => {
-        // TODO: Fetch data from API
-        // getPopularBrowsersData().then((response) => {
-        //     setData(response.data);
-        // });
-    }, []);
 
     return (
         <Card title='Trình duyệt phổ biến'>

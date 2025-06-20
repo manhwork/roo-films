@@ -2,9 +2,21 @@ import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function EngagementTypePieChart() {
     const [data, setData] = useState<any[]>([]);
+
+    useEffect(() => {
+        axios.get('http://localhost:3000/dw/engagement/type').then((res) => {
+            setData(
+                res.data.map((item: any) => ({
+                    value: item.count,
+                    name: item.engagementtype
+                }))
+            );
+        });
+    }, []);
 
     const option: EChartsOption = {
         title: {
@@ -46,22 +58,10 @@ export default function EngagementTypePieChart() {
                 labelLine: {
                     show: false
                 },
-                data: [
-                    { value: 1048, name: 'Review' },
-                    { value: 735, name: 'Comment' },
-                    { value: 580, name: 'Like' },
-                    { value: 484, name: 'Watchlist_Add' }
-                ]
+                data
             }
         ]
     };
-
-    useEffect(() => {
-        // TODO: Fetch data from API
-        // getEngagementTypeData().then((response) => {
-        //     setData(response.data);
-        // });
-    }, []);
 
     return (
         <Card title='Phân loại tương tác'>

@@ -2,9 +2,21 @@ import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function DeviceDistributionPieChart() {
     const [data, setData] = useState<any[]>([]);
+
+    useEffect(() => {
+        axios.get('http://localhost:3000/dw/device/distribution').then((res) => {
+            setData(
+                res.data.map((item: any) => ({
+                    value: item.count,
+                    name: item.devicetype
+                }))
+            );
+        });
+    }, []);
 
     const option: EChartsOption = {
         title: {
@@ -26,12 +38,7 @@ export default function DeviceDistributionPieChart() {
                 type: 'pie',
                 radius: '55%',
                 center: ['60%', '50%'],
-                data: [
-                    { value: 335, name: 'Desktop' },
-                    { value: 310, name: 'Mobile' },
-                    { value: 234, name: 'Tablet' },
-                    { value: 135, name: 'Smart TV' }
-                ],
+                data,
                 emphasis: {
                     itemStyle: {
                         shadowBlur: 10,
@@ -42,13 +49,6 @@ export default function DeviceDistributionPieChart() {
             }
         ]
     };
-
-    useEffect(() => {
-        // TODO: Fetch data from API
-        // getDeviceDistributionData().then((response) => {
-        //     setData(response.data);
-        // });
-    }, []);
 
     return (
         <Card title='Phân bổ thiết bị'>

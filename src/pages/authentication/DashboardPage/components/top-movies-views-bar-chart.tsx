@@ -1,25 +1,30 @@
-import type { EChartsOption } from "echarts";
-import { Card } from "antd";
-import ReactECharts from "echarts-for-react";
-
-const movies = [
-  "Phim 1", "Phim 2", "Phim 3", "Phim 4", "Phim 5", "Phim 6", "Phim 7", "Phim 8", "Phim 9", "Phim 10"
-];
-const views = [1200, 1100, 1050, 1000, 950, 900, 850, 800, 750, 700];
+import type { EChartsOption } from 'echarts';
+import { Card } from 'antd';
+import ReactECharts from 'echarts-for-react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function TopMoviesViewsBarChart() {
-  const option: EChartsOption = {
-    title: { text: "Top phim được xem nhiều nhất", left: "center" },
-    xAxis: { type: "category", data: movies },
-    yAxis: { type: "value" },
-    tooltip: {},
-    series: [
-      { type: "bar", data: views, itemStyle: { color: "#eb2f96" }, barWidth: "60%" }
-    ]
-  };
-  return (
-    <Card style={{ marginTop: 20 }}>
-      <ReactECharts opts={{ height: 300, width: "auto" }} option={option} />
-    </Card>
-  );
+    const [movies, setMovies] = useState<string[]>([]);
+    const [views, setViews] = useState<number[]>([]);
+
+    useEffect(() => {
+        axios.get('http://localhost:3000/dw/top-content/views').then((res) => {
+            setMovies(res.data.map((item: any) => item.title));
+            setViews(res.data.map((item: any) => Number(item.views)));
+        });
+    }, []);
+
+    const option: EChartsOption = {
+        title: { text: 'Top phim được xem nhiều nhất', left: 'center' },
+        xAxis: { type: 'category', data: movies },
+        yAxis: { type: 'value' },
+        tooltip: {},
+        series: [{ type: 'bar', data: views, itemStyle: { color: '#eb2f96' }, barWidth: '60%' }]
+    };
+    return (
+        <Card style={{ marginTop: 20 }}>
+            <ReactECharts opts={{ height: 300, width: 'auto' }} option={option} />
+        </Card>
+    );
 }

@@ -1,43 +1,23 @@
-import { DollarOutlined, ShoppingCartOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
-import { Card, Col, ColProps, Progress, Row, Statistic, Table, Tabs, Tag, Typography } from 'antd';
-import { useEffect, useState } from 'react';
-import {
-    Bar,
-    BarChart,
-    CartesianGrid,
-    Cell,
-    Line,
-    LineChart,
-    Pie,
-    PieChart,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis
-} from 'recharts';
-import { Summary } from '../../../models/Summary';
-import { TourBooking } from '../../../models/TourBooking';
-import { getSummary } from '../../../services/DashBoard/getSummary';
-import { getTourBookings } from '../../../services/TourBooking/getTourBookings';
-import CardList from './components/card-list';
-import MonthlyViewsBarChart from './components/monthly-views-bar-chart';
-import Last30DaysViewsLineChart from './components/last-30-days-views-line-chart';
-import TopUsersBarChart from './components/top-users-bar-chart';
+import { Col, ColProps, Row } from 'antd';
 import AvgWatchtimeUserBarChart from './components/avg-watchtime-user-bar-chart';
-import TopMoviesViewsBarChart from './components/top-movies-views-bar-chart';
-import TopMoviesRatingBarChart from './components/top-movies-rating-bar-chart';
-import ViewsByGenrePieChart from './components/views-by-genre-pie-chart';
-import TopMoviesLikesBarChart from './components/top-movies-likes-bar-chart';
-import ViewsByPeriodCharts from './components/views-by-period-charts';
+import CardList from './components/card-list';
+import DeviceDistributionPieChart from './components/device-distribution-pie-chart';
+import EngagementTimelineStackedLineChart from './components/engagement-timeline-stacked-line-chart';
+import EngagementTypePieChart from './components/engagement-type-pie-chart';
+import Last30DaysViewsLineChart from './components/last-30-days-views-line-chart';
+import MonthlyViewsBarChart from './components/monthly-views-bar-chart';
+import PopularBrowsersBarChart from './components/popular-browsers-bar-chart';
 import RatingBarChart from './components/rating-bar-chart';
 import RatingDistributionHistogram from './components/rating-distribution-histogram';
-import EngagementTypePieChart from './components/engagement-type-pie-chart';
-import DeviceDistributionPieChart from './components/device-distribution-pie-chart';
-import PopularBrowsersBarChart from './components/popular-browsers-bar-chart';
-import EngagementTimelineStackedLineChart from './components/engagement-timeline-stacked-line-chart';
-import UserActivityHeatmap from './components/user-activity-heatmap';
 import TopCountriesBarChart from './components/top-countries-bar-chart';
+import TopMoviesLikesBarChart from './components/top-movies-likes-bar-chart';
+import TopMoviesRatingBarChart from './components/top-movies-rating-bar-chart';
+import TopMoviesViewsBarChart from './components/top-movies-views-bar-chart';
+import TopUsersBarChart from './components/top-users-bar-chart';
+import UserActivityHeatmap from './components/user-activity-heatmap';
 import UserLocationMapChart from './components/user-location-map-chart';
+import ViewsByGenrePieChart from './components/views-by-genre-pie-chart';
+import ViewsByPeriodCharts from './components/views-by-period-charts';
 
 const wrapperCol: ColProps = {
     xs: 24,

@@ -1,36 +1,58 @@
 import { DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useFetchData } from '../../../../hooks/useFetchData';
+import axios from 'axios';
 import { Actor } from '../../../../models/Actor';
 import { RouteConfig } from '../../../../constants';
 
 export default function TableActorPage() {
+    const [data, setData] = useState<Actor[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+
     const navigate = useNavigate();
 
-    const { data, loading, error, refetch } = useFetchData('/actors', {
-        method: 'GET'
-    });
+    const fetchActors = async (page = 1, limit = 10) => {
+        setLoading(true);
+        try {
+            const res = await axios.get('http://localhost:3000/actors', {
+                params: { page, limit }
+            });
+            setData(
+                res.data.data.map((item: any) => ({
+                    _id: item.actorid?.toString(),
+                    name: item.name,
+                    originalName: item.originalname,
+                    bio: item.bio,
+                    birthDate: item.birthdate ? item.birthdate.slice(0, 10) : '',
+                    nationality: item.nationality,
+                    photoURL: item.photourl
+                }))
+            );
+            setTotal(res.data.total);
+        } catch (err) {
+            // handle error
+        }
+        setLoading(false);
+    };
 
-    const handleActionClick = (key: string, record: Actor) => {
+    useEffect(() => {
+        fetchActors(page, pageSize);
+    }, [page, pageSize]);
+
+    const handleActionClick = async (key: string, record: Actor) => {
         if (key === 'edit') {
             navigate(RouteConfig.UpdateActorPage.getPath(record._id));
         } else if (key === 'delete') {
-            console.log('Xoá', record);
+            await axios.delete(`http://localhost:3000/actors/${record._id}`);
+            fetchActors(page, pageSize);
         }
     };
 
-    // Map API data về đúng định dạng Actor
-    const actors: Actor[] = (data?.data || []).map((item: any) => ({
-        _id: item.actorid?.toString(),
-        name: item.name,
-        originalName: item.originalname,
-        bio: item.bio,
-        birthDate: item.birthdate ? item.birthdate.slice(0, 10) : '',
-        nationality: item.nationality,
-        photoURL: item.photourl
-    }));
     const columns: ColumnsType<Actor> = [
         {
             title: 'STT',
@@ -108,15 +130,17 @@ export default function TableActorPage() {
                 bordered={true}
                 size='small'
                 columns={columns}
-                dataSource={actors}
+                dataSource={data}
                 loading={loading}
                 scroll={{ x: 1000 }}
                 pagination={{
-                    current: data?.page,
-                    pageSize: data?.limit,
-                    total: data?.total,
-                    position: ['bottomRight'],
-                    className: 'ant-pagination-sticky',
+                    total,
+                    current: page,
+                    pageSize,
+                    onChange: (p, ps) => {
+                        setPage(p);
+                        setPageSize(ps);
+                    },
                     showSizeChanger: true,
                     showTotal: (total) => `Tổng ${total} bản ghi`
                 }}

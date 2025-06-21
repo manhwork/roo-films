@@ -1,5 +1,6 @@
 import Table, { ColumnsType } from 'antd/es/table';
-import { useFetchData } from '../../../hooks/useFetchData';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { User } from '../../../models/User';
 import { Button, Dropdown } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
@@ -7,34 +8,51 @@ import { useNavigate } from 'react-router-dom';
 import { RouteConfig } from '../../../constants';
 
 export default function TableUserPage() {
-    const { data, error, loading, refetch } = useFetchData('/users');
-
-    // Mapping dữ liệu từ API về đúng định dạng cho bảng
-    const users: User[] = (data?.data || []).map((item: any) => ({
-        _id: item.userid?.toString(),
-        username: item.username,
-        password: '', // không trả về password
-        email: item.email,
-        fullName: item.fullname,
-        avatar: item.avatar,
-        registerDate: item.registerdate,
-        lastLogin: item.lastlogin,
-        isActive: item.isactive,
-        isAdmin: item.isadmin
-    }));
+    const [data, setData] = useState<User[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const navigate = useNavigate();
 
-    const handleActionClick = (key: string, record: User) => {
-        switch (key) {
-            case 'edit':
-                navigate(RouteConfig.UpdateUserPage.getPath(record._id.toString()));
-                break;
-            case 'delete':
-                // Handle delete action
-                break;
-            default:
-                break;
+    const fetchUsers = async (page = 1, limit = 10) => {
+        setLoading(true);
+        try {
+            const res = await axios.get('http://localhost:3000/users', {
+                params: { page, limit }
+            });
+            setData(
+                res.data.data.map((item: any) => ({
+                    _id: item.userid?.toString(),
+                    username: item.username,
+                    password: '', // không trả về password
+                    email: item.email,
+                    fullName: item.fullname,
+                    avatar: item.avatar,
+                    registerDate: item.registerdate,
+                    lastLogin: item.lastlogin,
+                    isActive: item.isactive,
+                    isAdmin: item.isadmin
+                }))
+            );
+            setTotal(res.data.total);
+        } catch (err) {
+            // handle error
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchUsers(page, pageSize);
+    }, [page, pageSize]);
+
+    const handleActionClick = async (key: string, record: User) => {
+        if (key === 'edit') {
+            navigate(RouteConfig.UpdateUserPage.getPath(record._id.toString()));
+        } else if (key === 'delete') {
+            await axios.delete(`http://localhost:3000/users/${record._id}`);
+            fetchUsers(page, pageSize);
         }
     };
 
@@ -93,12 +111,17 @@ export default function TableUserPage() {
                 bordered
                 size='small'
                 columns={columns}
-                dataSource={users}
+                dataSource={data}
                 loading={loading}
-                scroll={{ x: 900 }}
+                scroll={{ x: 1000 }}
                 pagination={{
-                    total: data?.total || 0,
-                    position: ['bottomRight'],
+                    total,
+                    current: page,
+                    pageSize,
+                    onChange: (p, ps) => {
+                        setPage(p);
+                        setPageSize(ps);
+                    },
                     showSizeChanger: true,
                     showTotal: (total) => `Tổng ${total} bản ghi`
                 }}

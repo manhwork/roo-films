@@ -1,5 +1,6 @@
 import Table, { ColumnsType } from 'antd/es/table';
-import { useFetchData } from '../../../hooks/useFetchData';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Content } from '../../../models/Content';
 import { Button, Dropdown } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined, ZoomInOutlined } from '@ant-design/icons';
@@ -7,37 +8,60 @@ import { RouteConfig } from '../../../constants';
 import { useNavigate } from 'react-router-dom';
 
 export default function TableContentPage() {
-    const { data, error, loading, refetch } = useFetchData('/contents');
+    const [data, setData] = useState<Content[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+
     const navigate = useNavigate();
 
-    // Mapping dữ liệu từ API về đúng định dạng cho bảng
-    const contents: Content[] = (data?.data || []).map((item: any) => ({
-        _id: item.contentid?.toString(),
-        title: item.title,
-        originalTitle: item.originaltitle,
-        description: item.description,
-        type: item.type,
-        releaseDate: item.releasedate,
-        imdbRating: item.imdbrating,
-        posterURL: item.posterurl,
-        backdropURL: item.backdropurl,
-        trailerURL: item.trailerurl,
-        videoURL: item.videourl,
-        duration: item.duration,
-        numberOfSeasons: item.numberofseasons,
-        status: item.status,
-        viewCount: item.viewcount,
-        country: item.country,
-        language: item.language,
-        createdAt: item.createdat,
-        updatedAt: item.updatedat
-    }));
+    const fetchContents = async (page = 1, limit = 10) => {
+        setLoading(true);
+        try {
+            const res = await axios.get('http://localhost:3000/contents', {
+                params: { page, limit }
+            });
+            setData(
+                res.data.data.map((item: any) => ({
+                    _id: item.contentid?.toString(),
+                    title: item.title,
+                    originalTitle: item.originaltitle,
+                    description: item.description,
+                    type: item.type,
+                    releaseDate: item.releasedate,
+                    imdbRating: item.imdbrating,
+                    posterURL: item.posterurl,
+                    backdropURL: item.backdropurl,
+                    trailerURL: item.trailerurl,
+                    videoURL: item.videourl,
+                    duration: item.duration,
+                    numberOfSeasons: item.numberofseasons,
+                    status: item.status,
+                    viewCount: item.viewcount,
+                    country: item.country,
+                    language: item.language,
+                    createdAt: item.createdat,
+                    updatedAt: item.updatedat
+                }))
+            );
+            setTotal(res.data.total);
+        } catch (err) {
+            // handle error
+        }
+        setLoading(false);
+    };
 
-    const handleActionClick = (key: string, record: Content) => {
+    useEffect(() => {
+        fetchContents(page, pageSize);
+    }, [page, pageSize]);
+
+    const handleActionClick = async (key: string, record: Content) => {
         if (key === 'edit') {
             navigate(RouteConfig.UpdateContentPage.getPath(record._id));
         } else if (key === 'delete') {
-            // Gọi API xoá ở đây nếu muốn
+            await axios.delete(`http://localhost:3000/contents/${record._id}`);
+            fetchContents(page, pageSize);
         } else if (key === 'season') {
             navigate(RouteConfig.ListSeasonOfContentPage.getPath(record._id));
         }
@@ -94,12 +118,17 @@ export default function TableContentPage() {
                 bordered
                 size='small'
                 columns={columns}
-                dataSource={contents}
+                dataSource={data}
                 loading={loading}
                 scroll={{ x: 1000 }}
                 pagination={{
-                    total: data?.total || 0,
-                    position: ['bottomRight'],
+                    total,
+                    current: page,
+                    pageSize,
+                    onChange: (p, ps) => {
+                        setPage(p);
+                        setPageSize(ps);
+                    },
                     showSizeChanger: true,
                     showTotal: (total) => `Tổng ${total} bản ghi`
                 }}

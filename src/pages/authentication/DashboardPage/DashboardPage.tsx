@@ -536,6 +536,20 @@ export const DashboardPage = () => {
         };
     }, []);
 
+    // Tự động gọi dashboard:request-update mỗi 5 giây khi đã kết nối
+    useEffect(() => {
+        if (!isConnected || !socket) return;
+
+        const interval = setInterval(() => {
+            console.log('Auto requesting dashboard update...');
+            socket.emit('dashboard:request-update');
+        }, 5000); // 5 giây
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, [isConnected, socket]);
+
     // Fallback: fetch dữ liệu ban đầu nếu không có socket
     useEffect(() => {
         if (!isConnected && !reportData) {

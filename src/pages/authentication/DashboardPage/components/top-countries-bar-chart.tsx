@@ -1,64 +1,33 @@
 import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useMemo } from 'react';
+import { useDashboardData } from '../DashboardPage';
 
 export default function TopCountriesBarChart({ onRendered }: { onRendered?: () => void } = {}) {
-    const [countries, setCountries] = useState<string[]>([]);
-    const [views, setViews] = useState<number[]>([]);
+    const { data } = useDashboardData();
 
-    useEffect(() => {
-        axios.get('http://localhost:3000/dw/top-countries').then((res) => {
-            setCountries(res.data.map((item: any) => item.country));
-            setViews(res.data.map((item: any) => Number(item.views)));
-        });
-    }, []);
+    const chartData = useMemo(() => {
+        if (!data?.topCountries) return { countries: [], views: [] };
+
+        const countries = data.topCountries.map((item: any) => item.country);
+        const views = data.topCountries.map((item: any) => Number(item.views));
+
+        return { countries, views };
+    }, [data?.topCountries]);
 
     const option: EChartsOption = {
-        title: {
-            text: 'Top quốc gia có lượng xem cao',
-            left: 'center'
-        },
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'shadow'
-            },
-            formatter: '{b}: {c} lượt xem'
-        },
-        grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
-        },
-        xAxis: {
-            type: 'value',
-            boundaryGap: [0, 0.01]
-        },
-        yAxis: {
-            type: 'category',
-            data: countries
-        },
-        series: [
-            {
-                name: 'Lượt xem',
-                type: 'bar',
-                data: views,
-                label: {
-                    show: true,
-                    position: 'right',
-                    formatter: '{c}'
-                }
-            }
-        ]
+        title: { text: 'Top quốc gia có lượt xem nhiều nhất', left: 'center' },
+        xAxis: { type: 'category', data: chartData.countries },
+        yAxis: { type: 'value' },
+        tooltip: {},
+        series: [{ type: 'bar', data: chartData.views, itemStyle: { color: '#13c2c2' }, barWidth: '60%' }]
     };
 
     return (
-        <Card title='Top quốc gia có lượng xem cao'>
+        <Card style={{ marginTop: 20 }}>
             <ReactECharts
-                opts={{ height: 'auto', width: 'auto' }}
+                opts={{ height: 300, width: 'auto' }}
                 option={option}
                 onChartReady={() => {
                     onRendered?.();

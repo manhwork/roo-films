@@ -1,52 +1,33 @@
 import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useMemo } from 'react';
+import { useDashboardData } from '../DashboardPage';
 
 export default function PopularBrowsersBarChart({ onRendered }: { onRendered?: () => void } = {}) {
-    const [browsers, setBrowsers] = useState<string[]>([]);
-    const [counts, setCounts] = useState<number[]>([]);
+    const { data } = useDashboardData();
 
-    useEffect(() => {
-        axios.get('http://localhost:3000/dw/popular-browsers').then((res) => {
-            setBrowsers(res.data.map((item: any) => item.browser));
-            setCounts(res.data.map((item: any) => Number(item.count)));
-        });
-    }, []);
+    const chartData = useMemo(() => {
+        if (!data?.browsers) return { browsers: [], counts: [] };
+
+        const browsers = data.browsers.map((item: any) => item.browser);
+        const counts = data.browsers.map((item: any) => Number(item.count));
+
+        return { browsers, counts };
+    }, [data?.browsers]);
 
     const option: EChartsOption = {
-        title: {
-            text: 'Trình duyệt phổ biến',
-            left: 'center'
-        },
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'shadow'
-            }
-        },
-        xAxis: {
-            type: 'category',
-            data: browsers
-        },
-        yAxis: {
-            type: 'value'
-        },
-        series: [
-            {
-                name: 'Lượt truy cập',
-                type: 'bar',
-                data: counts,
-                itemStyle: { color: '#1890ff' }
-            }
-        ]
+        title: { text: 'Trình duyệt phổ biến', left: 'center' },
+        xAxis: { type: 'category', data: chartData.browsers },
+        yAxis: { type: 'value' },
+        tooltip: {},
+        series: [{ type: 'bar', data: chartData.counts, itemStyle: { color: '#722ed1' }, barWidth: '60%' }]
     };
 
     return (
-        <Card title='Trình duyệt phổ biến'>
+        <Card style={{ marginTop: 20 }}>
             <ReactECharts
-                opts={{ height: 'auto', width: 'auto' }}
+                opts={{ height: 300, width: 'auto' }}
                 option={option}
                 onChartReady={() => {
                     onRendered?.();

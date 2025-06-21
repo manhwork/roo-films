@@ -1,76 +1,70 @@
 import type { EChartsOption } from 'echarts';
-import { Card, Tabs } from 'antd';
+import { Card, Col, Row } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useMemo } from 'react';
+import { useDashboardData } from '../DashboardPage';
 
 export default function ViewsByPeriodCharts({ onRendered }: { onRendered?: () => void } = {}) {
-    const [monthData, setMonthData] = useState<any[]>([]);
-    const [seasonData, setSeasonData] = useState<any[]>([]);
-    const [yearData, setYearData] = useState<any[]>([]);
-    const [dayData, setDayData] = useState<any[]>([]);
+    const { data } = useDashboardData();
 
-    useEffect(() => {
-        axios.get('http://localhost:3000/dw/views/month').then((res) => setMonthData(res.data));
-        axios.get('http://localhost:3000/dw/views/year').then((res) => setYearData(res.data));
-        axios.get('http://localhost:3000/dw/views/season').then((res) => setSeasonData(res.data));
-        axios.get('http://localhost:3000/dw/views/day').then((res) => setDayData(res.data));
-    }, []);
+    const yearData = useMemo(() => {
+        if (!data?.viewsYear) return { years: [], views: [] };
 
-    const options: Record<string, EChartsOption> = {
-        month: {
-            title: { text: 'Lượt xem theo tháng', left: 'center' },
-            xAxis: { type: 'category', data: monthData.map((d: any) => `${d.month}/${d.year}`) },
-            yAxis: { type: 'value' },
-            series: [{ type: 'line', data: monthData.map((d: any) => Number(d.views)) }]
-        },
-        season: {
-            title: { text: 'Lượt xem theo mùa', left: 'center' },
-            xAxis: { type: 'category', data: seasonData.map((d: any) => `Q${d.season}/${d.year}`) },
-            yAxis: { type: 'value' },
-            series: [{ type: 'line', data: seasonData.map((d: any) => Number(d.views)) }]
-        },
-        year: {
-            title: { text: 'Lượt xem theo năm', left: 'center' },
-            xAxis: { type: 'category', data: yearData.map((d: any) => `${d.year}`) },
-            yAxis: { type: 'value' },
-            series: [{ type: 'line', data: yearData.map((d: any) => Number(d.views)) }]
-        },
-        day: {
-            title: { text: 'Lượt xem theo ngày', left: 'center' },
-            xAxis: { type: 'category', data: dayData.map((d: any) => d.date) },
-            yAxis: { type: 'value' },
-            series: [{ type: 'line', data: dayData.map((d: any) => Number(d.views)) }]
-        }
+        const years = data.viewsYear.map((item: any) => item.year);
+        const views = data.viewsYear.map((item: any) => Number(item.views));
+
+        return { years, views };
+    }, [data?.viewsYear]);
+
+    const seasonData = useMemo(() => {
+        if (!data?.viewsSeason) return { seasons: [], views: [] };
+
+        const seasons = data.viewsSeason.map((item: any) => `Q${item.season} ${item.year}`);
+        const views = data.viewsSeason.map((item: any) => Number(item.views));
+
+        return { seasons, views };
+    }, [data?.viewsSeason]);
+
+    const yearOption: EChartsOption = {
+        title: { text: 'Lượt xem theo năm', left: 'center' },
+        xAxis: { type: 'category', data: yearData.years },
+        yAxis: { type: 'value' },
+        tooltip: {},
+        series: [{ type: 'bar', data: yearData.views, itemStyle: { color: '#1890ff' }, barWidth: '60%' }]
+    };
+
+    const seasonOption: EChartsOption = {
+        title: { text: 'Lượt xem theo mùa', left: 'center' },
+        xAxis: { type: 'category', data: seasonData.seasons },
+        yAxis: { type: 'value' },
+        tooltip: {},
+        series: [{ type: 'bar', data: seasonData.views, itemStyle: { color: '#52c41a' }, barWidth: '60%' }]
     };
 
     return (
-        <Card style={{ marginTop: 20 }}>
-            <Tabs
-                defaultActiveKey='month'
-                items={[
-                    {
-                        key: 'month',
-                        label: 'Tháng',
-                        children: <ReactECharts option={options.month} style={{ height: 300 }} />
-                    },
-                    {
-                        key: 'season',
-                        label: 'Mùa',
-                        children: <ReactECharts option={options.season} style={{ height: 300 }} />
-                    },
-                    {
-                        key: 'year',
-                        label: 'Năm',
-                        children: <ReactECharts option={options.year} style={{ height: 300 }} />
-                    },
-                    {
-                        key: 'day',
-                        label: 'Ngày',
-                        children: <ReactECharts option={options.day} style={{ height: 300 }} />
-                    }
-                ]}
-            />
-        </Card>
+        <Row gutter={[20, 20]}>
+            <Col span={12}>
+                <Card style={{ marginTop: 20 }}>
+                    <ReactECharts
+                        opts={{ height: 300, width: 'auto' }}
+                        option={yearOption}
+                        onChartReady={() => {
+                            onRendered?.();
+                        }}
+                    />
+                </Card>
+            </Col>
+            <Col span={12}>
+                <Card style={{ marginTop: 20 }}>
+                    <ReactECharts
+                        opts={{ height: 300, width: 'auto' }}
+                        option={seasonOption}
+                        onChartReady={() => {
+                            onRendered?.();
+                        }}
+                    />
+                </Card>
+            </Col>
+        </Row>
     );
 }

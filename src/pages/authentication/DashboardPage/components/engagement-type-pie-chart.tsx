@@ -1,72 +1,48 @@
 import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useMemo } from 'react';
+import { useDashboardData } from '../DashboardPage';
 
 export default function EngagementTypePieChart({ onRendered }: { onRendered?: () => void } = {}) {
-    const [data, setData] = useState<any[]>([]);
+    const { data } = useDashboardData();
 
-    useEffect(() => {
-        axios.get('http://localhost:3000/dw/engagement/type').then((res) => {
-            setData(
-                res.data.map((item: any) => ({
-                    value: item.count,
-                    name: item.engagementtype
-                }))
-            );
-        });
-    }, []);
+    const chartData = useMemo(() => {
+        if (!data?.engagementType) return [];
+
+        return data.engagementType.map((item: any) => ({
+            name: item.engagementtype,
+            value: Number(item.count)
+        }));
+    }, [data?.engagementType]);
 
     const option: EChartsOption = {
-        title: {
-            text: 'Phân loại tương tác',
-            left: 'center'
-        },
+        title: { text: 'Tỷ lệ loại tương tác', left: 'center' },
         tooltip: {
             trigger: 'item',
-            formatter: '{a} <br/>{b} : {c} ({d}%)'
-        },
-        legend: {
-            orient: 'vertical',
-            left: 'left',
-            top: 'middle'
+            formatter: '{a} <br/>{b}: {c} ({d}%)'
         },
         series: [
             {
-                name: 'Loại tương tác',
+                name: 'Tương tác',
                 type: 'pie',
-                radius: ['40%', '70%'],
-                center: ['60%', '50%'],
-                avoidLabelOverlap: false,
-                itemStyle: {
-                    borderRadius: 10,
-                    borderColor: '#fff',
-                    borderWidth: 2
-                },
-                label: {
-                    show: false,
-                    position: 'center'
-                },
+                radius: '50%',
+                data: chartData,
                 emphasis: {
-                    label: {
-                        show: true,
-                        fontSize: '18',
-                        fontWeight: 'bold'
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
                     }
-                },
-                labelLine: {
-                    show: false
-                },
-                data
+                }
             }
         ]
     };
 
     return (
-        <Card title='Phân loại tương tác'>
+        <Card style={{ marginTop: 20 }}>
             <ReactECharts
-                opts={{ height: 'auto', width: 'auto' }}
+                opts={{ height: 300, width: 'auto' }}
                 option={option}
                 onChartReady={() => {
                     onRendered?.();

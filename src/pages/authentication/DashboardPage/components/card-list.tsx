@@ -2,8 +2,7 @@ import type { ColProps } from 'antd';
 import { VideoCameraOutlined, UserOutlined, EyeOutlined } from '@ant-design/icons';
 import { Card, Col, Row } from 'antd';
 import CountUp from 'react-countup';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useDashboardData } from '../DashboardPage';
 
 const wrapperCol: ColProps = {
     xs: 24,
@@ -15,27 +14,14 @@ const wrapperCol: ColProps = {
 };
 
 export default function CardList() {
-    const [stats, setStats] = useState({
-        totalMovies: 0,
-        totalEpisodes: 0,
-        totalUsers: 0,
-        totalViews: 0
-    });
+    const { data } = useDashboardData();
 
-    useEffect(() => {
-        Promise.all([
-            axios.get('http://localhost:3000/dw/summary/contents'),
-            axios.get('http://localhost:3000/dw/summary/users'),
-            axios.get('http://localhost:3000/dw/summary/views')
-        ]).then(([contents, users, views]) => {
-            setStats({
-                totalMovies: contents.data.totalMovies,
-                totalEpisodes: contents.data.totalEpisodes,
-                totalUsers: users.data.totalUsers,
-                totalViews: views.data.totalViews
-            });
-        });
-    }, []);
+    const stats = {
+        totalMovies: data?.summary?.totalMovies || 0,
+        totalEpisodes: 0, // Không có trong summary hiện tại
+        totalUsers: data?.summary?.totalUsers || 0,
+        totalViews: data?.summary?.totalViews || 0
+    };
 
     const CARD_LIST = [
         {

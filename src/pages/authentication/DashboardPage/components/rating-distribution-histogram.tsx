@@ -1,27 +1,29 @@
 import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useMemo } from 'react';
+import { useDashboardData } from '../DashboardPage';
 
 export default function RatingDistributionHistogram({ onRendered }: { onRendered?: () => void } = {}) {
-    const [bins, setBins] = useState<string[]>([]);
-    const [counts, setCounts] = useState<number[]>([]);
+    const { data } = useDashboardData();
 
-    useEffect(() => {
-        axios.get('http://localhost:3000/dw/ratings/distribution').then((res) => {
-            setBins(res.data.map((item: any) => `${item.rating_bin}-${Number(item.rating_bin) + 1}`));
-            setCounts(res.data.map((item: any) => Number(item.count)));
-        });
-    }, []);
+    const chartData = useMemo(() => {
+        if (!data?.ratingStats) return { ratings: [], counts: [] };
+
+        const ratings = data.ratingStats.map((item: any) => item.rating_bin);
+        const counts = data.ratingStats.map((item: any) => Number(item.count));
+
+        return { ratings, counts };
+    }, [data?.ratingStats]);
 
     const option: EChartsOption = {
-        title: { text: 'Phổ điểm đánh giá', left: 'center' },
-        xAxis: { type: 'category', data: bins },
+        title: { text: 'Phổ điểm đánh giá phim', left: 'center' },
+        xAxis: { type: 'category', data: chartData.ratings },
         yAxis: { type: 'value' },
         tooltip: {},
-        series: [{ type: 'bar', data: counts, itemStyle: { color: '#722ed1' }, barWidth: '60%' }]
+        series: [{ type: 'bar', data: chartData.counts, itemStyle: { color: '#13c2c2' }, barWidth: '60%' }]
     };
+
     return (
         <Card style={{ marginTop: 20 }}>
             <ReactECharts

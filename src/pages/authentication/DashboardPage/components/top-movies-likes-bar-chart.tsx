@@ -1,27 +1,29 @@
 import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useMemo } from 'react';
+import { useDashboardData } from '../DashboardPage';
 
 export default function TopMoviesLikesBarChart({ onRendered }: { onRendered?: () => void } = {}) {
-    const [movies, setMovies] = useState<string[]>([]);
-    const [likes, setLikes] = useState<number[]>([]);
+    const { data } = useDashboardData();
 
-    useEffect(() => {
-        axios.get('http://localhost:3000/dw/top-content/likes').then((res) => {
-            setMovies(res.data.map((item: any) => item.title));
-            setLikes(res.data.map((item: any) => Number(item.likes)));
-        });
-    }, []);
+    const chartData = useMemo(() => {
+        if (!data?.topLikedMovies) return { titles: [], likes: [] };
+
+        const titles = data.topLikedMovies.map((item: any) => item.title);
+        const likes = data.topLikedMovies.map((item: any) => Number(item.likes));
+
+        return { titles, likes };
+    }, [data?.topLikedMovies]);
 
     const option: EChartsOption = {
-        title: { text: 'Top 10 phim có nhiều lượt thích nhất', left: 'center' },
-        xAxis: { type: 'category', data: movies },
+        title: { text: 'Top 10 phim có lượt thích nhiều nhất', left: 'center' },
+        xAxis: { type: 'category', data: chartData.titles },
         yAxis: { type: 'value' },
         tooltip: {},
-        series: [{ type: 'bar', data: likes, itemStyle: { color: '#f759ab' }, barWidth: '60%' }]
+        series: [{ type: 'bar', data: chartData.likes, itemStyle: { color: '#eb2f96' }, barWidth: '60%' }]
     };
+
     return (
         <Card style={{ marginTop: 20 }}>
             <ReactECharts

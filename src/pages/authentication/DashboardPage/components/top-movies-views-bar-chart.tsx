@@ -1,27 +1,29 @@
 import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useMemo } from 'react';
+import { useDashboardData } from '../DashboardPage';
 
 export default function TopMoviesViewsBarChart({ onRendered }: { onRendered?: () => void } = {}) {
-    const [movies, setMovies] = useState<string[]>([]);
-    const [views, setViews] = useState<number[]>([]);
+    const { data } = useDashboardData();
 
-    useEffect(() => {
-        axios.get('http://localhost:3000/dw/top-content/views').then((res) => {
-            setMovies(res.data.map((item: any) => item.title));
-            setViews(res.data.map((item: any) => Number(item.views)));
-        });
-    }, []);
+    const chartData = useMemo(() => {
+        if (!data?.topMovies) return { titles: [], views: [] };
+
+        const titles = data.topMovies.map((item: any) => item.title);
+        const views = data.topMovies.map((item: any) => Number(item.views));
+
+        return { titles, views };
+    }, [data?.topMovies]);
 
     const option: EChartsOption = {
-        title: { text: 'Top phim được xem nhiều nhất', left: 'center' },
-        xAxis: { type: 'category', data: movies },
+        title: { text: 'Top 10 phim được xem nhiều nhất', left: 'center' },
+        xAxis: { type: 'category', data: chartData.titles },
         yAxis: { type: 'value' },
         tooltip: {},
-        series: [{ type: 'bar', data: views, itemStyle: { color: '#eb2f96' }, barWidth: '60%' }]
+        series: [{ type: 'bar', data: chartData.views, itemStyle: { color: '#fa541c' }, barWidth: '60%' }]
     };
+
     return (
         <Card style={{ marginTop: 20 }}>
             <ReactECharts

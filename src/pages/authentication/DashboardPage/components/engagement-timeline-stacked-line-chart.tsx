@@ -1,29 +1,25 @@
 import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useMemo } from 'react';
+import { useDashboardData } from '../DashboardPage';
 
 export default function EngagementTimelineStackedLineChart({ onRendered }: { onRendered?: () => void } = {}) {
-    const [days, setDays] = useState<string[]>([]);
-    const [likes, setLikes] = useState<number[]>([]);
-    const [comments, setComments] = useState<number[]>([]);
-    const [reviews, setReviews] = useState<number[]>([]);
+    const { data } = useDashboardData();
 
-    useEffect(() => {
-        axios.get('http://localhost:3000/dw/engagement/timeline').then((res) => {
-            setDays(res.data.map((item: any) => item.date));
-            setLikes(res.data.map((item: any) => Number(item.likes)));
-            setComments(res.data.map((item: any) => Number(item.comments)));
-            setReviews(res.data.map((item: any) => Number(item.reviews)));
-        });
-    }, []);
+    const chartData = useMemo(() => {
+        if (!data?.timeline) return { dates: [], likes: [], comments: [], reviews: [] };
+
+        const dates = data.timeline.map((item: any) => item.date);
+        const likes = data.timeline.map((item: any) => Number(item.likes));
+        const comments = data.timeline.map((item: any) => Number(item.comments));
+        const reviews = data.timeline.map((item: any) => Number(item.reviews));
+
+        return { dates, likes, comments, reviews };
+    }, [data?.timeline]);
 
     const option: EChartsOption = {
-        title: {
-            text: 'Tổng số lượt like/comment theo ngày',
-            left: 'center'
-        },
+        title: { text: 'Timeline tương tác người dùng', left: 'center' },
         tooltip: {
             trigger: 'axis',
             axisPointer: {
@@ -34,61 +30,54 @@ export default function EngagementTimelineStackedLineChart({ onRendered }: { onR
             }
         },
         legend: {
-            data: ['Like', 'Comment', 'Review'],
-            top: '10%'
-        },
-        grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
+            data: ['Likes', 'Comments', 'Reviews']
         },
         xAxis: {
             type: 'category',
             boundaryGap: false,
-            data: days
+            data: chartData.dates
         },
         yAxis: {
             type: 'value'
         },
         series: [
             {
-                name: 'Like',
+                name: 'Likes',
                 type: 'line',
                 stack: 'Total',
                 areaStyle: {},
                 emphasis: {
                     focus: 'series'
                 },
-                data: likes
+                data: chartData.likes
             },
             {
-                name: 'Comment',
+                name: 'Comments',
                 type: 'line',
                 stack: 'Total',
                 areaStyle: {},
                 emphasis: {
                     focus: 'series'
                 },
-                data: comments
+                data: chartData.comments
             },
             {
-                name: 'Review',
+                name: 'Reviews',
                 type: 'line',
                 stack: 'Total',
                 areaStyle: {},
                 emphasis: {
                     focus: 'series'
                 },
-                data: reviews
+                data: chartData.reviews
             }
         ]
     };
 
     return (
-        <Card title='Tổng số lượt like/comment theo ngày'>
+        <Card style={{ marginTop: 20 }}>
             <ReactECharts
-                opts={{ height: 'auto', width: 'auto' }}
+                opts={{ height: 300, width: 'auto' }}
                 option={option}
                 onChartReady={() => {
                     onRendered?.();

@@ -1,44 +1,33 @@
 import type { EChartsOption } from 'echarts';
 import { Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useMemo } from 'react';
+import { useDashboardData } from '../DashboardPage';
 
 export default function DeviceDistributionPieChart({ onRendered }: { onRendered?: () => void } = {}) {
-    const [data, setData] = useState<any[]>([]);
+    const { data } = useDashboardData();
 
-    useEffect(() => {
-        axios.get('http://localhost:3000/dw/device/distribution').then((res) => {
-            setData(
-                res.data.map((item: any) => ({
-                    value: item.count,
-                    name: item.devicetype
-                }))
-            );
-        });
-    }, []);
+    const chartData = useMemo(() => {
+        if (!data?.deviceType) return [];
+
+        return data.deviceType.map((item: any) => ({
+            name: item.devicetype,
+            value: Number(item.count)
+        }));
+    }, [data?.deviceType]);
 
     const option: EChartsOption = {
-        title: {
-            text: 'Phân bổ thiết bị',
-            left: 'center'
-        },
+        title: { text: 'Tỷ lệ loại thiết bị truy cập', left: 'center' },
         tooltip: {
             trigger: 'item',
-            formatter: '{a} <br/>{b} : {c} ({d}%)'
-        },
-        legend: {
-            orient: 'vertical',
-            left: 'left',
-            top: 'middle'
+            formatter: '{a} <br/>{b}: {c} ({d}%)'
         },
         series: [
             {
                 name: 'Thiết bị',
                 type: 'pie',
-                radius: '55%',
-                center: ['60%', '50%'],
-                data,
+                radius: '50%',
+                data: chartData,
                 emphasis: {
                     itemStyle: {
                         shadowBlur: 10,
@@ -51,9 +40,9 @@ export default function DeviceDistributionPieChart({ onRendered }: { onRendered?
     };
 
     return (
-        <Card title='Phân bổ thiết bị'>
+        <Card style={{ marginTop: 20 }}>
             <ReactECharts
-                opts={{ height: 'auto', width: 'auto' }}
+                opts={{ height: 300, width: 'auto' }}
                 option={option}
                 onChartReady={() => {
                     onRendered?.();

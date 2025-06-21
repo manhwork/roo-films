@@ -1,7 +1,8 @@
 import { Button, Col, ColProps, Row } from 'antd';
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, createContext, useContext } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { io, Socket } from 'socket.io-client';
 import AvgWatchtimeUserBarChart from './components/avg-watchtime-user-bar-chart';
 import CardList from './components/card-list';
 import DeviceDistributionPieChart from './components/device-distribution-pie-chart';
@@ -49,7 +50,13 @@ async function fetchReportData() {
         timelineRes,
         heatmapRes,
         topCountriesRes,
-        userLocationRes
+        userLocationRes,
+        summaryContentsRes,
+        summaryUsersRes,
+        summaryViewsRes,
+        ratingMonthRes,
+        viewsYearRes,
+        viewsSeasonRes
     ] = await Promise.all([
         fetch('http://localhost:3000/dw/views/month').then((r) => r.json()),
         fetch('http://localhost:3000/dw/views/day').then((r) => r.json()),
@@ -66,8 +73,15 @@ async function fetchReportData() {
         fetch('http://localhost:3000/dw/engagement/timeline').then((r) => r.json()),
         fetch('http://localhost:3000/dw/user/activity-heatmap').then((r) => r.json()),
         fetch('http://localhost:3000/dw/top-countries').then((r) => r.json()),
-        fetch('http://localhost:3000/dw/user/location').then((r) => r.json())
+        fetch('http://localhost:3000/dw/user/location').then((r) => r.json()),
+        fetch('http://localhost:3000/dw/summary/contents').then((r) => r.json()),
+        fetch('http://localhost:3000/dw/summary/users').then((r) => r.json()),
+        fetch('http://localhost:3000/dw/summary/views').then((r) => r.json()),
+        fetch('http://localhost:3000/dw/ratings/month').then((r) => r.json()),
+        fetch('http://localhost:3000/dw/views/year').then((r) => r.json()),
+        fetch('http://localhost:3000/dw/views/season').then((r) => r.json())
     ]);
+
     return {
         monthlyViews: monthlyViewsRes,
         last30DaysViews: last30DaysViewsRes,
@@ -84,27 +98,43 @@ async function fetchReportData() {
         timeline: timelineRes,
         heatmap: heatmapRes,
         topCountries: topCountriesRes,
-        userLocation: userLocationRes
+        userLocation: userLocationRes,
+        summary: {
+            totalMovies: summaryContentsRes.totalMovies,
+            totalUsers: summaryUsersRes.totalUsers,
+            totalViews: summaryViewsRes.totalViews
+        },
+        ratingMonth: ratingMonthRes,
+        viewsYear: viewsYearRes,
+        viewsSeason: viewsSeasonRes
     };
 }
 
 interface DashboardReportData {
-    monthlyViews?: Array<{ month: number; views: number }>;
-    last30DaysViews?: Array<{ views: number }>;
+    monthlyViews?: Array<{ month: number; year: number; views: number }>;
+    last30DaysViews?: Array<{ date: string; views: number }>;
     topMovies?: Array<{ title: string; views: number }>;
     topRatedMovies?: Array<{ title: string; rating: number }>;
     topLikedMovies?: Array<{ title: string; likes: number }>;
-    genreViews?: Array<{ genre: string; views: number }>;
-    ratingStats?: Array<{ rating: number; count: number }>;
+    genreViews?: Array<{ genrename: string; views: number }>;
+    ratingStats?: Array<{ rating_bin: number; count: number }>;
     topUsers?: Array<{ username: string; views: number }>;
-    avgWatchtime?: Array<{ username: string; avgWatchtime: number }>;
-    engagementType?: any;
-    deviceType?: any;
-    browsers?: any;
-    timeline?: any;
-    heatmap?: any;
-    topCountries?: any;
-    userLocation?: any;
+    avgWatchtime?: Array<{ username: string; avg_minutes: number }>;
+    engagementType?: Array<{ engagementtype: string; count: number }>;
+    deviceType?: Array<{ devicetype: string; count: number }>;
+    browsers?: Array<{ browser: string; count: number }>;
+    timeline?: Array<{ date: string; likes: number; comments: number; reviews: number }>;
+    heatmap?: Array<{ dayname: string; hour: number; activity: number }>;
+    topCountries?: Array<{ country: string; views: number }>;
+    userLocation?: Array<{ city: string; user_count: number }>;
+    summary?: {
+        totalMovies: number;
+        totalUsers: number;
+        totalViews: number;
+    };
+    ratingMonth?: Array<{ month: number; year: number; avg_rating: number }>;
+    viewsYear?: Array<{ year: number; views: number }>;
+    viewsSeason?: Array<{ season: number; year: number; views: number }>;
 }
 
 function DashboardReportTemplate({
@@ -309,8 +339,8 @@ function DashboardReportTemplate({
                     </thead>
                     <tbody>
                         {data.genreViews?.map((g) => (
-                            <tr key={g.genre}>
-                                <td style={tdStyle}>{g.genre}</td>
+                            <tr key={g.genrename}>
+                                <td style={tdStyle}>{g.genrename}</td>
                                 <td style={tdStyle}>{g.views}</td>
                             </tr>
                         ))}
@@ -330,8 +360,8 @@ function DashboardReportTemplate({
                     </thead>
                     <tbody>
                         {data.ratingStats?.map((r) => (
-                            <tr key={r.rating}>
-                                <td style={tdStyle}>{r.rating}</td>
+                            <tr key={r.rating_bin}>
+                                <td style={tdStyle}>{r.rating_bin}</td>
                                 <td style={tdStyle}>{r.count}</td>
                             </tr>
                         ))}
@@ -391,7 +421,7 @@ function DashboardReportTemplate({
                             <tr key={u.username}>
                                 <td style={tdStyle}>{idx + 1}</td>
                                 <td style={{ ...tdStyle, textAlign: 'left' }}>{u.username}</td>
-                                <td style={tdStyle}>{u.avgWatchtime}</td>
+                                <td style={tdStyle}>{u.avg_minutes}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -450,19 +480,68 @@ function DashboardReportTemplate({
 
 const TOTAL_CHARTS = 17; // Số lượng chart thực tế bạn dùng
 
+// Dashboard Context để chia sẻ dữ liệu realtime
+const DashboardContext = createContext<{
+    data: DashboardReportData | null;
+    isConnected: boolean;
+    lastUpdate: Date | null;
+}>({
+    data: null,
+    isConnected: false,
+    lastUpdate: null
+});
+
+export const useDashboardData = () => useContext(DashboardContext);
+
 export const DashboardPage = () => {
     const reportRef = useRef<HTMLDivElement>(null);
     const [reportData, setReportData] = useState<any>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [chartsRendered, setChartsRendered] = useState(0);
+    const [socket, setSocket] = useState<Socket | null>(null);
+    const [isConnected, setIsConnected] = useState(false);
+    const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
     // Lấy ngày đầu/tháng và cuối/tháng (bạn có thể lấy động)
     const fromDate = '01/06/2024';
     const toDate = '30/06/2024';
 
+    // Khởi tạo Socket.IO connection
     useEffect(() => {
-        fetchReportData().then(setReportData);
+        const newSocket = io('http://localhost:3000', {
+            transports: ['websocket', 'polling']
+        });
+
+        newSocket.on('connect', () => {
+            console.log('Connected to Socket.IO server');
+            setIsConnected(true);
+        });
+
+        newSocket.on('disconnect', () => {
+            console.log('Disconnected from Socket.IO server');
+            setIsConnected(false);
+        });
+
+        newSocket.on('dashboard:update', (data: DashboardReportData) => {
+            console.log('Received realtime dashboard update:', data);
+            setReportData(data);
+            setLastUpdate(new Date());
+        });
+
+        setSocket(newSocket);
+
+        // Cleanup khi component unmount
+        return () => {
+            newSocket.close();
+        };
     }, []);
+
+    // Fallback: fetch dữ liệu ban đầu nếu không có socket
+    useEffect(() => {
+        if (!isConnected && !reportData) {
+            fetchReportData().then(setReportData);
+        }
+    }, [isConnected, reportData]);
 
     // Callback cho mỗi chart khi render xong
     const handleChartRendered = () => setChartsRendered((prev) => prev + 1);
@@ -473,6 +552,13 @@ export const DashboardPage = () => {
     }, [reportData]);
 
     const handleStartExport = () => setIsExporting(true);
+
+    // Hàm request update từ server
+    const handleRequestUpdate = () => {
+        if (socket && isConnected) {
+            socket.emit('dashboard:request-update');
+        }
+    };
 
     useEffect(() => {
         if (isExporting) {
@@ -530,16 +616,34 @@ export const DashboardPage = () => {
     }, [isExporting]);
 
     return (
-        <>
-            <div className='flex justify-end gap-4 mb-4'>
-                <Button
-                    type='dashed'
-                    className='p-4 text-right'
-                    onClick={handleStartExport}
-                    disabled={!reportData || isExporting}
-                >
-                    {isExporting ? 'Đang xuất...' : !reportData ? 'Đang tải dữ liệu...' : 'Xuất báo cáo'}
-                </Button>
+        <DashboardContext.Provider value={{ data: reportData, isConnected, lastUpdate }}>
+            <div className='flex justify-between items-center gap-4 mb-4'>
+                <div className='flex items-center gap-4'>
+                    <div className={`flex items-center gap-2 ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <span className='text-sm font-medium'>
+                            {isConnected ? 'Đang kết nối realtime' : 'Mất kết nối realtime'}
+                        </span>
+                    </div>
+                    {lastUpdate && (
+                        <span className='text-sm text-gray-500'>
+                            Cập nhật lần cuối: {lastUpdate.toLocaleTimeString('vi-VN')}
+                        </span>
+                    )}
+                </div>
+                <div className='flex gap-4'>
+                    <Button type='default' onClick={handleRequestUpdate} disabled={!isConnected} className='p-4'>
+                        Làm mới dữ liệu
+                    </Button>
+                    <Button
+                        type='dashed'
+                        className='p-4 text-right'
+                        onClick={handleStartExport}
+                        disabled={!reportData || isExporting}
+                    >
+                        {isExporting ? 'Đang xuất...' : !reportData ? 'Đang tải dữ liệu...' : 'Xuất báo cáo'}
+                    </Button>
+                </div>
             </div>
             {/* Dashboard hiển thị bình thường */}
             <div>
@@ -663,6 +767,6 @@ export const DashboardPage = () => {
                     </div>
                 </div>
             )}
-        </>
+        </DashboardContext.Provider>
     );
 };

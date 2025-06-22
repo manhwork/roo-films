@@ -501,6 +501,8 @@ export const DashboardPage = () => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [lastRequestTime, setLastRequestTime] = useState<number>(0);
 
     // Lấy ngày đầu/tháng và cuối/tháng (bạn có thể lấy động)
     const fromDate = '01/06/2024';
@@ -509,12 +511,18 @@ export const DashboardPage = () => {
     // Khởi tạo Socket.IO connection
     useEffect(() => {
         const newSocket = io('http://localhost:3000', {
-            transports: ['websocket', 'polling']
+            transports: ['websocket', 'polling'],
+            timeout: 20000, // Timeout 20 giây
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000
         });
 
         newSocket.on('connect', () => {
             console.log('Connected to Socket.IO server');
             setIsConnected(true);
+            setIsLoading(false);
         });
 
         newSocket.on('disconnect', () => {
@@ -522,10 +530,21 @@ export const DashboardPage = () => {
             setIsConnected(false);
         });
 
+        newSocket.on('connect_error', (error) => {
+            console.error('Socket connection error:', error);
+            setIsConnected(false);
+            setIsLoading(false);
+        });
+
         newSocket.on('dashboard:update', (data: DashboardReportData) => {
             console.log('Received realtime dashboard update:', data);
             setReportData(data);
             setLastUpdate(new Date());
+            setIsLoading(false); // Tắt loading khi nhận được dữ liệu
+        });
+
+        newSocket.on('dashboard:status', (status) => {
+            console.log('Server status:', status);
         });
 
         setSocket(newSocket);
@@ -536,26 +555,47 @@ export const DashboardPage = () => {
         };
     }, []);
 
-    // Tự động gọi dashboard:request-update mỗi 5 giây khi đã kết nối
+    // Tự động gọi dashboard:request-update mỗi 30 giây khi đã kết nối và không đang loading
     useEffect(() => {
-        if (!isConnected || !socket) return;
+        if (!isConnected || !socket || isLoading) return;
 
         const interval = setInterval(() => {
-            console.log('Auto requesting dashboard update...');
-            socket.emit('dashboard:request-update');
-        }, 5000); // 5 giây
+            const now = Date.now();
+            if (now - lastRequestTime >= 25000) {
+                console.log('Auto requesting dashboard update...');
+                setIsLoading(true);
+                setLastRequestTime(now);
+                socket.emit('dashboard:request-update');
+            }
+        }, 30000);
 
         return () => {
             clearInterval(interval);
         };
-    }, [isConnected, socket]);
+    }, [isConnected, socket, isLoading, lastRequestTime]);
 
     // Fallback: fetch dữ liệu ban đầu nếu không có socket
     useEffect(() => {
-        if (!isConnected && !reportData) {
-            fetchReportData().then(setReportData);
+        if (!isConnected && !reportData && !isLoading) {
+            setIsLoading(true);
+            const timeoutId = setTimeout(() => {
+                console.log('Fetch timeout, retrying...');
+                setIsLoading(false);
+            }, 30000); // Timeout 30 giây
+
+            fetchReportData()
+                .then((data) => {
+                    clearTimeout(timeoutId);
+                    setReportData(data);
+                    setIsLoading(false);
+                })
+                .catch((error) => {
+                    clearTimeout(timeoutId);
+                    console.error('Error fetching report data:', error);
+                    setIsLoading(false);
+                });
         }
-    }, [isConnected, reportData]);
+    }, [isConnected, reportData, isLoading]);
 
     // Callback cho mỗi chart khi render xong
     const handleChartRendered = () => setChartsRendered((prev) => prev + 1);
@@ -569,7 +609,10 @@ export const DashboardPage = () => {
 
     // Hàm request update từ server
     const handleRequestUpdate = () => {
-        if (socket && isConnected) {
+        if (socket && isConnected && !isLoading) {
+            console.log('Manual requesting dashboard update...');
+            setIsLoading(true);
+            setLastRequestTime(Date.now());
             socket.emit('dashboard:request-update');
         }
     };
@@ -587,15 +630,15 @@ export const DashboardPage = () => {
                 const canvas = await html2canvas(element, {
                     useCORS: true,
                     scale: 2,
-                    logging: true, // Bật log để debug
+                    logging: true,
                     width: element.scrollWidth,
                     height: element.scrollHeight
                 });
                 const imgData = canvas.toDataURL('image/png', 1.0);
                 const pdf = new jsPDF({
-                    orientation: 'p', // Portrait mode
+                    orientation: 'p',
                     unit: 'px',
-                    format: 'a4' // Standard A4 size
+                    format: 'a4'
                 });
 
                 const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -607,7 +650,6 @@ export const DashboardPage = () => {
 
                 let finalCanvasWidth, finalCanvasHeight;
 
-                // Fit to width
                 finalCanvasWidth = pdfWidth;
                 finalCanvasHeight = finalCanvasWidth / canvasAspectRatio;
 
@@ -622,7 +664,7 @@ export const DashboardPage = () => {
                 }
 
                 pdf.save(`BaoCao_HoatDong_TrangWeb_Full_${Date.now()}.pdf`);
-                setIsExporting(false); // Kết thúc chế độ xuất
+                setIsExporting(false);
             };
 
             exportPDF();
@@ -639,6 +681,12 @@ export const DashboardPage = () => {
                             {isConnected ? 'Đang kết nối realtime' : 'Mất kết nối realtime'}
                         </span>
                     </div>
+                    {isLoading && (
+                        <div className='flex items-center gap-2 text-blue-600'>
+                            <div className='w-3 h-3 rounded-full bg-blue-500 animate-pulse'></div>
+                            <span className='text-sm font-medium'>Đang tải dữ liệu...</span>
+                        </div>
+                    )}
                     {lastUpdate && (
                         <span className='text-sm text-gray-500'>
                             Cập nhật lần cuối: {lastUpdate.toLocaleTimeString('vi-VN')}
@@ -646,20 +694,25 @@ export const DashboardPage = () => {
                     )}
                 </div>
                 <div className='flex gap-4'>
-                    <Button type='default' onClick={handleRequestUpdate} disabled={!isConnected} className='p-4'>
-                        Làm mới dữ liệu
-                    </Button>
+                    {/* <Button
+                        type='default'
+                        onClick={handleRequestUpdate}
+                        disabled={!isConnected || isLoading}
+                        className='p-4'
+                        loading={isLoading}
+                    >
+                        {isLoading ? 'Đang tải...' : 'Làm mới dữ liệu'}
+                    </Button> */}
                     <Button
                         type='dashed'
                         className='p-4 text-right'
                         onClick={handleStartExport}
-                        disabled={!reportData || isExporting}
+                        disabled={!reportData || isExporting || isLoading}
                     >
                         {isExporting ? 'Đang xuất...' : !reportData ? 'Đang tải dữ liệu...' : 'Xuất báo cáo'}
                     </Button>
                 </div>
             </div>
-            {/* Dashboard hiển thị bình thường */}
             <div>
                 <CardList />
                 <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
@@ -742,7 +795,6 @@ export const DashboardPage = () => {
                 </Row>
             </div>
 
-            {/* Báo cáo được render đặc biệt khi xuất PDF */}
             {isExporting && (
                 <div
                     style={{
@@ -762,9 +814,7 @@ export const DashboardPage = () => {
                             left: '50%',
                             top: '50%',
                             transform: 'translate(-50%, -50%)',
-                            width: 1000, // Chiều rộng của báo cáo
-                            // maxHeight: '90vh',
-                            // overflowY: 'auto',
+                            width: 1000,
                             background: '#fff',
                             padding: '20px'
                         }}
